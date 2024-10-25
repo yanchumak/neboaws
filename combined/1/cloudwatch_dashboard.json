@@ -1,0 +1,38 @@
+{
+    "widgets": [
+      {
+        "type": "metric",
+        "x": 0,
+        "y": 0,
+        "width": 12,
+        "height": 6,
+        "properties": {
+          "metrics": [
+            [ "AWS/Lambda", "Duration", "FunctionName", "vpc-lambda-function" ],
+            [ ".", "Invocations", ".", "." ]
+          ],
+          "period": 300,
+          "stat": "Average",
+          "region": "us-east-1",
+          "title": "Lambda Function Metrics"
+        }
+      },
+      {
+        "type": "metric",
+        "x": 12,
+        "y": 0,
+        "width": 12,
+        "height": 6,
+        "properties": {
+          "metrics": [
+            [ "AWS/RDS", "CPUUtilization", "DBInstanceIdentifier", "my-rds-instance" ],
+            [ ".", "DatabaseConnections", ".", "." ]
+          ],
+          "period": 300,
+          "stat": "Average",
+          "region": "us-east-1",
+          "title": "RDS Metrics"
+        }
+      }
+    ]
+  }

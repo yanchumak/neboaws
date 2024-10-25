@@ -1,0 +1,1 @@
+1. Configure monitoring and logging of basic components.
