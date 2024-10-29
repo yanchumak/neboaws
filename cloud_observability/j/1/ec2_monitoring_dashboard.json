@@ -1,0 +1,71 @@
+{
+    "widgets": [
+      {
+        "type": "metric",
+        "x": 0,
+        "y": 0,
+        "width": 6,
+        "height": 6,
+        "properties": {
+          "metrics": [
+            [ "AWS/EC2", "CPUUtilization", "InstanceId", "*" ]
+          ],
+          "title": "EC2 CPU Utilization",
+          "period": 300,
+          "stat": "Average",
+          "region": "us-east-1"
+        }
+      },
+      {
+        "type": "metric",
+        "x": 6,
+        "y": 0,
+        "width": 6,
+        "height": 6,
+        "properties": {
+          "metrics": [
+            [ "AWS/EC2", "NetworkIn", "InstanceId", "*" ],
+            [ ".", "NetworkOut", "InstanceId", "*" ]
+          ],
+          "title": "Network In/Out",
+          "period": 300,
+          "stat": "Sum",
+          "region": "us-east-1"
+        }
+      },
+      {
+        "type": "metric",
+        "x": 0,
+        "y": 6,
+        "width": 6,
+        "height": 6,
+        "properties": {
+          "metrics": [
+            [ "AWS/EC2", "DiskReadBytes", "InstanceId", "*" ],
+            [ ".", "DiskWriteBytes", "InstanceId", "*" ]
+          ],
+          "title": "Disk Read/Write Bytes",
+          "period": 300,
+          "stat": "Sum",
+          "region": "us-east-1"
+        }
+      },
+      {
+        "type": "metric",
+        "x": 6,
+        "y": 6,
+        "width": 6,
+        "height": 6,
+        "properties": {
+          "metrics": [
+            [ "AWS/EC2", "StatusCheckFailed", "InstanceId", "*" ]
+          ],
+          "title": "Instance Status Check",
+          "period": 300,
+          "stat": "Sum",
+          "region": "us-east-1"
+        }
+      }
+    ]
+  }
+  
