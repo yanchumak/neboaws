@@ -1,0 +1,1 @@
+1. Provision virtual machine with predefined types and images
