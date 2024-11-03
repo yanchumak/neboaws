@@ -1,0 +1,110 @@
+- hosts: all
+  become: yes
+  vars:
+    device_name: /dev/xvdf
+    vg_name: vg_var
+    lv_name: lv_var
+    mount_point: /var
+    temp_mount_point: /mnt/temp_var
+
+  tasks:
+    - name: Install LVM2 package
+      ansible.builtin.package:
+        name: lvm2
+        state: present
+        update_cache: yes
+
+    - name: Check the current mount source of {{ mount_point }}
+      ansible.builtin.command: findmnt {{ mount_point }} -no source
+      register: mount_source
+      changed_when: false
+      failed_when: false
+
+    - name: Set the expected device name
+      ansible.builtin.set_fact:
+        expected_device: "/dev/mapper/{{ vg_name }}-{{ lv_name }}"
+
+    - name: Debug output to check mount source
+      ansible.builtin.debug:
+        msg: "Mount source of {{ mount_point }}: {{ mount_source.stdout }}"
+
+    - name: Stop execution of the playbook /var is already mounted
+      meta: end_play
+      when: expected_device in mount_source.stdout
+
+    - name: Create a Physical Volume (PV) on the new disk
+      ansible.builtin.command: pvcreate {{ device_name }}
+
+    - name: Create a Volume Group (VG)
+      ansible.builtin.command: vgcreate {{ vg_name }} {{ device_name }}
+
+    - name: Create a Logical Volume (LV)
+      ansible.builtin.command: lvcreate -l 100%FREE -n {{ lv_name }} {{ vg_name }}
+
+    - name: Format the LV as ext4
+      ansible.builtin.filesystem:
+        fstype: ext4
+        dev: "/dev/{{ vg_name }}/{{ lv_name }}"
+
+    - name: Create a temporary mount point
+      ansible.builtin.file:
+        path: "{{ temp_mount_point }}"
+        state: directory
+
+    - name: Mount the new LV to the temporary mount point
+      ansible.posix.mount:
+        path: "{{ temp_mount_point }}"
+        src: "/dev/{{ vg_name }}/{{ lv_name }}"
+        fstype: ext4
+        state: mounted
+
+    - name: Copy the existing /var data to the new volume
+      ansible.builtin.command: rsync -avx {{ mount_point }}/ {{ temp_mount_point }}/
+
+    - name: Unmount the temporary mount point
+      ansible.posix.mount:
+        path: "{{ temp_mount_point }}"
+        state: unmounted
+
+    - name: Remove the temporary mount point directory
+      ansible.builtin.file:
+        path: "{{ temp_mount_point }}"
+        state: absent
+        force: yes
+
+    - name: Unmount the old /var
+      ansible.posix.mount:
+        path: "{{ mount_point }}"
+        state: unmounted
+
+    - name: Update /etc/fstab for the new /var mount
+      ansible.builtin.lineinfile:
+        path: /etc/fstab
+        regexp: "^/dev/{{ vg_name }}/{{ lv_name }}"
+        line: "/dev/{{ vg_name }}/{{ lv_name }} {{ mount_point }} ext4 defaults 0 2"
+        state: present
+
+    - name: Mount the new /var from /etc/fstab
+      ansible.posix.mount:
+        path: "{{ mount_point }}"
+        src: "/dev/{{ vg_name }}/{{ lv_name }}"
+        fstype: ext4
+        state: mounted
+
+    - name: Verify the /var is correctly mounted
+      ansible.builtin.shell: mount | grep -w {{ mount_point }}
+      register: mount_result
+
+    - name: Fail if /var is not mounted correctly
+      ansible.builtin.fail:
+        msg: "/var is not mounted as expected!"
+      when: mount_result.rc != 0
+    
+    - name: Restart logging services if /var is mounted
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        state: restarted
+      with_items:
+        - rsyslog
+        - syslog
+      when: mount_result.rc == 0
