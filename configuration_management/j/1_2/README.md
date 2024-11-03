@@ -9,7 +9,7 @@
 ### 1. Generate key for SSH connection
 
 ```shell 
-ssh-keygen -t rsa -b 4096 -f ~/.ssh/my_ssh_key
+ssh-keygen -t rsa -b 4096 -f ~/.ssh/my_ansible_key
 ```
 
 ### 2. Provision AWS EC2 using terraform 
@@ -28,7 +28,7 @@ Mandatory param to run terraform is `ssh_public_key_path`
 
 Apply terraform.
 ```shell 
-terraform apply -var "ssh_public_key_path=~/.ssh/my_ssh_key.pub"
+terraform apply -var "ssh_public_key_path=~/.ssh/my_ansible_key.pub"
 ```
 
 Also, you can specify:
@@ -56,7 +56,7 @@ Replace `<tf.output.instance_public_ip>` to public IP of VM instance.
 
 Run playbook to install Elasticsearch.
 ```shell 
-ansible-playbook -i <tf.output.instance_public_ip>, provision_elastic.yml --extra-vars "ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/my_ssh_key"
+ansible-playbook -i <tf.output.instance_public_ip>, provision_elastic.yml --extra-vars "ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/my_ansible_key"
 ```
 
 In case of success you wil able to see similar output. 

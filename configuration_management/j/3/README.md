@@ -19,7 +19,7 @@ Execute Ansible playbook
 ```shell
 sudo add-apt-repository -y ppa:jblgf0/python
 sudo apt-get update
-sudo apt-get install python3.6
-sudo ln -sf /usr/bin/python3.9 /usr/bin/python3 
-sudo apt-get install python-apt
+sudo apt-get install -y python3.6
+sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 
+sudo apt-get install -y python-apt
 ```
