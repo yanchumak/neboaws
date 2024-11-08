@@ -1,44 +1,56 @@
-# Create DynamoDB Table
-resource "aws_dynamodb_table" "my_table" {
-  name           = "MyDynamoDBTable"
-  billing_mode   = "PAY_PER_REQUEST" # On-demand pricing
-  hash_key       = "PK"              # Partition key
-  range_key      = "SK"              # Sort key
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.65.0"
+    }
+  }
+  required_version = ">= 1.8.5"
+}
 
-  attribute {
-    name = "PK"
-    type = "S" # String
+provider "aws" {
+  region = "us-east-1"
+}
+
+# Generate a password for the database
+resource "random_password" "db_password" {
+  length           = 16
+  special          = false
+  override_special = "_"
+}
+
+# Security Group for RDS allowing inbound access to MySQL (port 3306)
+resource "aws_security_group" "rds_sg" {
+  name_prefix = "rds-sg"
+
+  ingress {
+    description = "Allow MySQL access"
+    from_port   = 3306
+    to_port     = 3306
+    protocol    = "tcp"
+    cidr_blocks = ["YOUR_LOCAL_IP/32"]  # Replace with your local IP
   }
 
-  attribute {
-    name = "SK"
-    type = "S" # String
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
+}
 
-  # Define Global Secondary Index
-  global_secondary_index {
-    name               = "GSI1"   # Name of GSI
-    hash_key           = "GSI_PK" # Partition key for GSI
-    range_key          = "GSI_SK" # Sort key for GSI
-    projection_type    = "ALL"    # Project all attributes
-    
-    # Provisioned read/write capacity (optional if PAY_PER_REQUEST)
-    read_capacity  = 5
-    write_capacity = 5
-  }
-
-  attribute {
-    name = "GSI_PK"
-    type = "S" # String
-  }
-
-  attribute {
-    name = "GSI_SK"
-    type = "S" # String
-  }
-
-  tags = {
-    Name = "MyDynamoDBTable"
-    Env  = "dev"
-  }
+# RDS MySQL Instance
+resource "aws_db_instance" "mysql" {
+  allocated_storage    = 20
+  engine               = "mysql"
+  engine_version       = "8.0"  # specify MySQL version
+  instance_class       = "db.t3.small"
+                   = "mydatabase"
+  username             = "admin"
+  password             = random_password.db_password.result
+  parameter_group_name = "default.mysql8.0"
+  publicly_accessible  = true
+  skip_final_snapshot  = false
+  deletion_protection  = true
+  vpc_security_group_ids = [aws_security_group.rds_sg.id]
 }
