@@ -1,6 +1,7 @@
 name: code-npm-node-deploy-snapshots
 
 on:
+  pull_request:
   workflow_dispatch:
     inputs:
       ENV:
