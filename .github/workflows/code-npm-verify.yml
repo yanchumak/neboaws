@@ -1,0 +1,36 @@
+name: code-npm-verify
+
+on:
+  pull_request:
+    types: [ opened, reopened ]
+    branches:
+      - main
+
+jobs:
+  verify:
+    name: Install npm dependencies and run tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: combined/2/code
+    env:
+      NODE_VERSION: '18.x'
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache-dependency-path: combined/2/code/package-lock.json
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: |
+          npm test
