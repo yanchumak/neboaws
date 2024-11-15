@@ -9,7 +9,6 @@ on:
 
 jobs:
   verify:
-    name: Install npm dependencies and run tests
     runs-on: ubuntu-latest
     defaults:
       run:

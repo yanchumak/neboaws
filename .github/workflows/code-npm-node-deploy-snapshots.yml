@@ -28,11 +28,21 @@ jobs:
     uses: ./.github/workflows/code-npm-verify.yml
       
   build-deployable:
+    environment:
+      name: dev
     needs: [identify-changes, code-npm-verify]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build and deploy
-        run: echo "Building and deploying..."
+      - name: Configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v1.7.0
+        with:
+          role-to-assume: ${{ env.GH_AWS_ROLE_ARN }}
+          role-session-name: GitHub_to_AWS_via_FederatedOIDC
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Sts GetCallerIdentity
+        run: |
+          aws sts get-caller-identity
