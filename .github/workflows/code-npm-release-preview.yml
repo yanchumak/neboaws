@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+            fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -46,7 +48,7 @@ jobs:
         id: semantic
         run: |
           GITHUB_REF=${{ github.head_ref }}
-          npx semantic-release --dry-run --no-ci --branches "${{ github.head_ref  }}" > semantic-output.txt || true
+          npx semantic-release --dry-run --branches "${{ github.head_ref  }}" > semantic-output.txt || true
           cat semantic-output.txt
 
       - name: Post Changelog to PR
