@@ -43,7 +43,7 @@ jobs:
         id: semantic-release           
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-          REPOSITORY_URL: git@github.com:${{ github.repository }}.git
+          REPOSITORY_URL: https://github.com/${{ github.repository }}.git
         run: |
             GITHUB_REF=${{ github.head_ref }}
             OUTPUT="$(npx semantic-release  --repository-url $REPOSITORY_URL --no-ci --dry-run --debug --plugins @semantic-release/github,@semantic-release/commit-analyzer,@semantic-release/release-notes-generator --branches ${{ github.head_ref }})"
