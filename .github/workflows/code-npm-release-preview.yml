@@ -71,7 +71,7 @@ jobs:
                 res = '### No release note would be generated.';
             }
 
-            const SEMANTIC_RELEASE_BODY_HEADER = '## 📝 Semantic Release Report';
+            const SEMANTIC_RELEASE_BODY_HEADER = '## Semantic Release Report';
             const body = [SEMANTIC_RELEASE_BODY_HEADER, res].join('\n');
 
             github.rest.issues.createComment({
