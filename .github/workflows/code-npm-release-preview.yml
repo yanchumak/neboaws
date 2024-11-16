@@ -1,0 +1,73 @@
+name: Pull Request Version Preview
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  preview-changelog:
+    name: Generate Version Preview and Changelog
+    runs-on: ubuntu-latest
+    env:
+      NODE_VERSION: '18.x'
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Check for Release Label
+        id: check-label
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const labels = context.payload.pull_request.labels.map(label => label.name);
+            core.setOutput('has-release-label', labels.includes('release'));
+
+      - name: Skip if No Release Label
+        if: ${{ steps.check-label.outputs.has-release-label != 'true' }}
+        run: echo "No release label found. Skipping workflow."
+
+      - name: Install Dependencies
+        working-directory: combined/2/code
+        run: npm install
+
+      - name: Generate Version Preview
+        working-directory: combined/2/code
+        id: semantic
+        run: |
+          npx semantic-release --dry-run --ci > semantic-output.txt || true
+          cat semantic-output.txt
+
+      # Step 7: Post Changelog to PR
+      - name: Post Changelog to PR
+        if: ${{ steps.check-label.outputs.has-release-label == 'true' }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const changelog = fs.readFileSync('semantic-output.txt', 'utf-8');
+            const versionMatch = changelog.match(/The next release version is (.+?)\n/);
+            const version = versionMatch ? versionMatch[1] : 'unknown';
+            const previewMessage = `
+              ### 🚀 Version Preview
+              This pull request is expected to bump the version to:
+              \`\`\`
+              ${version}
+              \`\`\`
+              ### Changelog Preview
+              \`\`\`
+              ${changelog.split('Changelog:')[1]?.trim()}
+              \`\`\`
+            `;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: previewMessage,
+            });
