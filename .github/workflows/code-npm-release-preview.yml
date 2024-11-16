@@ -43,7 +43,7 @@ jobs:
         id: semantic-release
         run: |
             GITHUB_REF=${{ github.head_ref }}
-            OUTPUT="$(npx semantic-release --no-ci --dry-run --plugins @semantic-release/commit-analyzer,@semantic-release/release-notes-generator --branches ${{ github.head_ref }})"
+            OUTPUT="$(npx semantic-release --no-ci --dry-run --debug --plugins @semantic-release/commit-analyzer,@semantic-release/release-notes-generator --branches ${{ github.head_ref }})"
             echo "$OUTPUT"
             git status
             git log --oneline -n 10
