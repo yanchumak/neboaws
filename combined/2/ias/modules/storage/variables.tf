@@ -3,6 +3,11 @@ variable "env" {
   type        = string
 }
 
+variable "app_name" {
+  description = "value of the app name"
+  type        = string
+}
+
 variable "db_port" {
   description = "value of the db port"
   type        = number

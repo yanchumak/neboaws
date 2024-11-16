@@ -1,4 +1,4 @@
-name: code-npm-verify
+name: code-npm-node-verify
 
 on:
   pull_request:

@@ -27,6 +27,7 @@ module "storage" {
   source = "../../modules/storage"
 
   env                  = local.env
+  app_name             = local.app_name
   db_instance_class    = local.db_instance_class
   db_port              = local.db_port
   db_name              = local.db_name

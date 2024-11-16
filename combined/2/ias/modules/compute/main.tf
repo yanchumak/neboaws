@@ -1,6 +1,6 @@
 # ECS Cluster with Container Insights enabled
 resource "aws_ecs_cluster" "this" {
-  name = "${var.app_name}-ecs-cluster-${var.env}"
+  name = "${var.app_name}-cluster-${var.env}"
 
   setting {
     name  = "containerInsights"
@@ -101,7 +101,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_policy_attachment" {
 
 # ECS Task Definition
 resource "aws_ecs_task_definition" "this" {
-  family                   = "${var.app_name}-task-family-${var.env}"
+  family                   = "${var.app_name}-task-def-${var.env}"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = "256"
@@ -162,7 +162,7 @@ resource "aws_ecs_task_definition" "this" {
 
 # ECS Service
 resource "aws_ecs_service" "this" {
-  name            = "${var.app_name}-ecs-service-${var.env}"
+  name            = "${var.app_name}-service-${var.env}"
   cluster         = aws_ecs_cluster.this.id
   task_definition = aws_ecs_task_definition.this.arn
   desired_count   = 1
