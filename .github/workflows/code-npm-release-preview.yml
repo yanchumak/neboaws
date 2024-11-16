@@ -42,9 +42,8 @@ jobs:
       - name: Check semantic versioning
         id: semantic-release           
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-          REPOSITORY_URL: https://github.com/${{ github.repository }}.git
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
             GITHUB_REF=${{ github.head_ref }}
-            OUTPUT="$(npx semantic-release  --repository-url $REPOSITORY_URL --no-ci --dry-run --debug --plugins @semantic-release/github,@semantic-release/commit-analyzer,@semantic-release/release-notes-generator --branches ${{ github.head_ref }})"
+            OUTPUT="$(npx semantic-release --no-ci --dry-run --debug --plugins @semantic-release/github,@semantic-release/commit-analyzer,@semantic-release/release-notes-generator --branches ${{ github.head_ref }})"
             echo "$OUTPUT"
