@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+permissions:
+  id-token: write
+  contents: read      
+
 jobs:
   preview-changelog:
     name: Generate Version Preview and Changelog
@@ -48,6 +52,7 @@ jobs:
         if: ${{ steps.check-label.outputs.has-release-label == 'true' }}
         uses: actions/github-script@v6
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
             const changelog = fs.readFileSync('./combined/2/code/semantic-output.txt', 'utf-8');
