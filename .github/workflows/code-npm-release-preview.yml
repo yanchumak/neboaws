@@ -6,8 +6,8 @@ on:
       - main
 
 permissions:
-  id-token: write
-  contents: read      
+  contents: write
+  pull-requests: write
 
 jobs:
   preview-changelog:
