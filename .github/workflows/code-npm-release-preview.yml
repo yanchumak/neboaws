@@ -41,7 +41,7 @@ jobs:
         working-directory: combined/2/code
         id: semantic
         run: |
-          npx semantic-release --dry-run  --no-ci --branches main > semantic-output.txt || true
+          npx semantic-release --dry-run  --no-ci > semantic-output.txt || true
           cat semantic-output.txt
 
       - name: Post Changelog to PR
