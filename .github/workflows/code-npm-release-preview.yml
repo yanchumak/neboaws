@@ -45,7 +45,7 @@ jobs:
         working-directory: combined/2/code
         id: semantic
         run: |
-          npx semantic-release --dry-run --no-ci --branches "${{ github.head_ref }}" > semantic-output.txt || true
+          npx semantic-release --dry-run --no-ci --branches "${{ github.base_ref }}" > semantic-output.txt || true
           cat semantic-output.txt
 
       - name: Post Changelog to PR
