@@ -1,0 +1,44 @@
+{
+    "branches": [
+      "main",
+      {
+        "name": "feature/*",
+        "prerelease": "${name.replace(/^feature\\//, '')}"
+      },
+      {
+        "name": "hotfix/*",
+        "prerelease": "${name.replace(/^hotfix\\//, '')}"
+      },
+      {
+        "name": "bugfix/*",
+        "prerelease": "${name.replace(/^bugfix\\//, '')}"
+      }
+    ],
+    "plugins": [
+      [
+        "@semantic-release/commit-analyzer",
+        {
+          "releaseRules": [
+            { "type": "feat", "release": "minor" },
+            { "type": "fix", "release": "patch" },
+            { "type": "chore", "release": false },
+            { "type": "docs", "release": false },
+            { "type": "refactor", "release": "patch" },
+            { "type": "test", "release": false }
+          ],
+          "parserOpts": {
+            "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES"]
+          }
+        }
+      ],
+      [
+        "@semantic-release/release-notes-generator",
+        {
+          "writerOpts": {
+            "commitsSort": ["subject", "scope"]
+          }
+        }
+      ]
+    ]
+  }
+  

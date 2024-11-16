@@ -1,14 +1,14 @@
-name: code-npm-verify
+name: code-npm-node-verify
 
 on:
   pull_request:
     types: [ opened, reopened ]
     branches:
       - main
+  workflow_call:
 
 jobs:
   verify:
-    name: Install npm dependencies and run tests
     runs-on: ubuntu-latest
     defaults:
       run:
