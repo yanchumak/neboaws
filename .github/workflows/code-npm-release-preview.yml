@@ -41,10 +41,9 @@ jobs:
         working-directory: combined/2/code
         id: semantic
         run: |
-          npx semantic-release --dry-run --ci > semantic-output.txt || true
+          npx semantic-release --dry-run  --no-ci > semantic-output.txt || true
           cat semantic-output.txt
 
-      # Step 7: Post Changelog to PR
       - name: Post Changelog to PR
         if: ${{ steps.check-label.outputs.has-release-label == 'true' }}
         uses: actions/github-script@v6
