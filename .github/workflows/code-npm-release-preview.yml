@@ -45,7 +45,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}              
         run: |
             GITHUB_REF=${{ github.head_ref }}
-            npx semantic-release --no-ci --dry-run --branches ${{ github.head_ref }}) semantic-output.txt || true
+            npx semantic-release --no-ci --dry-run --branches ${{ github.head_ref }} > semantic-output.txt || true
             cat semantic-output.txt
 
       - name: Post Changelog to PR
