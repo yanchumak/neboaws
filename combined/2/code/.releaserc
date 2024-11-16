@@ -1,18 +1,6 @@
 {
     "branches": [
-      "main",
-      {
-        "name": "feature/*",
-        "prerelease": "${name.replace(/^feature\\//, '')}"
-      },
-      {
-        "name": "hotfix/*",
-        "prerelease": "${name.replace(/^hotfix\\//, '')}"
-      },
-      {
-        "name": "bugfix/*",
-        "prerelease": "${name.replace(/^bugfix\\//, '')}"
-      }
+      "main"
     ],
     "plugins": [
       [
