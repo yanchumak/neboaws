@@ -20,7 +20,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-            fetch-depth: 0
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -47,6 +47,8 @@ jobs:
         working-directory: combined/2/code
         id: semantic
         run: |
+          unset GITHUB_ACTIONS
+          unset GITHUB_EVENT_NAME
           GITHUB_REF=${{ github.head_ref }}
           npx semantic-release --dry-run --branches "${{ github.head_ref  }}" > semantic-output.txt || true
           cat semantic-output.txt
