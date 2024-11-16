@@ -2,6 +2,7 @@ name: Pull Request Version Preview
 
 on:
   pull_request:
+    types: [labeled, unlabeled]
     branches:
       - main
 
@@ -40,6 +41,7 @@ jobs:
         run: echo "No release label found. Skipping workflow."
 
       - name: Check semantic versioning
+        if: ${{ steps.check-label.outputs.has-release-label == 'true' }}
         id: semantic-release       
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}              
