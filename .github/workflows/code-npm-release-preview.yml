@@ -39,16 +39,9 @@ jobs:
         if: ${{ steps.check-label.outputs.has-release-label != 'true' }}
         run: echo "No release label found. Skipping workflow."
 
-      - name: Install Dependencies
-        working-directory: combined/2/code
-        run: npm install
-
       - name: Generate Version Preview
-        working-directory: combined/2/code
         id: semantic
         run: |
-          unset GITHUB_ACTIONS
-          unset GITHUB_EVENT_NAME
           GITHUB_REF=${{ github.head_ref }}
           npx semantic-release --dry-run --branches "${{ github.head_ref  }}" > semantic-output.txt || true
           cat semantic-output.txt
