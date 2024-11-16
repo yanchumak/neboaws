@@ -4,7 +4,6 @@
     ],
     "plugins": [
       [
-        "@semantic-release/github",
         "@semantic-release/commit-analyzer",
         {
           "releaseRules": [
