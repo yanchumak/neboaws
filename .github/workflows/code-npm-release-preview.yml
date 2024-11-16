@@ -43,10 +43,8 @@ jobs:
         id: semantic-release           
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-          GITHUB_URL: https://github.com22
-          GITHUB_API_URL: https://api222.github.com
           REPOSITORY_URL: git@github.com:${{ github.repository }}.git
         run: |
             GITHUB_REF=${{ github.head_ref }}
-            OUTPUT="$(npx semantic-release --no-ci --dry-run --debug --plugins @semantic-release/github,@semantic-release/commit-analyzer,@semantic-release/release-notes-generator --branches ${{ github.head_ref }})"
+            OUTPUT="$(npx semantic-release  --repository-url $REPOSITORY_URL --no-ci --dry-run --debug --plugins @semantic-release/github,@semantic-release/commit-analyzer,@semantic-release/release-notes-generator --branches ${{ github.head_ref }})"
             echo "$OUTPUT"
