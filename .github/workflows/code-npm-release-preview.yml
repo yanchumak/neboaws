@@ -45,8 +45,7 @@ jobs:
         working-directory: combined/2/code
         id: semantic
         run: |
-          unset GITHUB_ACTIONS
-          unset GITHUB_EVENT_NAME
+          GITHUB_REF=${{ github.head_ref }}
           npx semantic-release --dry-run --no-ci --branches "${{ github.head_ref  }}" > semantic-output.txt || true
           cat semantic-output.txt
 
