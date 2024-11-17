@@ -2,19 +2,26 @@ name: Pull Request Version Preview
 
 on:
   pull_request:
+    types: [labeled, unlabeled, synchronize, opened, edited, reopened, ready_for_review]
     branches:
       - main
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   preview-changelog:
     name: Generate Version Preview and Changelog
     runs-on: ubuntu-latest
     env:
-      NODE_VERSION: '18.x'
+      NODE_VERSION: '20.x'
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -23,7 +30,7 @@ jobs:
 
       - name: Check for Release Label
         id: check-label
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             const labels = context.payload.pull_request.labels.map(label => label.name);
@@ -33,40 +40,43 @@ jobs:
         if: ${{ steps.check-label.outputs.has-release-label != 'true' }}
         run: echo "No release label found. Skipping workflow."
 
-      - name: Install Dependencies
-        working-directory: combined/2/code
-        run: npm install
-
-      - name: Generate Version Preview
-        working-directory: combined/2/code
-        id: semantic
+      - name: Check semantic versioning
+        if: ${{ steps.check-label.outputs.has-release-label == 'true' }}
+        id: semantic-release       
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}              
         run: |
-          npx semantic-release --dry-run  --no-ci > semantic-output.txt || true
-          cat semantic-output.txt
+            GITHUB_REF=${{ github.head_ref }}
+            npx semantic-release --no-ci --dry-run --branches ${{ github.head_ref }} > semantic-output.txt || true
+            cat semantic-output.txt
 
       - name: Post Changelog to PR
         if: ${{ steps.check-label.outputs.has-release-label == 'true' }}
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
-            const changelog = fs.readFileSync('./combined/2/code/semantic-output.txt', 'utf-8');
-            const versionMatch = changelog.match(/The next release version is (.+?)\n/);
-            const version = versionMatch ? versionMatch[1] : 'unknown';
-            const previewMessage = `
-              ### 🚀 Version Preview
-              This pull request is expected to bump the version to:
-              \`\`\`
-              ${version}
-              \`\`\`
-              ### Changelog Preview
-              \`\`\`
-              ${changelog.split('Changelog:')[1]?.trim()}
-              \`\`\`
-            `;
+            const semanticReleaseOutput = fs.readFileSync('./semantic-output.txt', 'utf-8');
+            const semanticReleaseLogMatch = /^[[0-9:\sAMPM]+\]\s\[semantic-release\].*$/;
+            const lines = semanticReleaseOutput.split('\n');
+            const lastSemanticReleaseLogIndex = [...lines]
+                .reverse()
+                .findIndex((line) => line.match(semanticReleaseLogMatch));
+
+            const releaseNoteIndex = lines.length - lastSemanticReleaseLogIndex;
+            const releaseNote = lines.slice(releaseNoteIndex);
+
+            let res = releaseNote.join('\n');
+            if (!releaseNote.length || !res) {
+                res = '### No release note would be generated.';
+            }
+
+            const SEMANTIC_RELEASE_BODY_HEADER = '## Semantic Release Report';
+            const body = [SEMANTIC_RELEASE_BODY_HEADER, res].join('\n');
+
             github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: previewMessage,
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body,
             });
