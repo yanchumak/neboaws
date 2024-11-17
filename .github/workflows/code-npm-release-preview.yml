@@ -2,7 +2,7 @@ name: Pull Request Version Preview
 
 on:
   pull_request:
-    types: [labeled]
+    types: [labeled, unlabeled, synchronize, opened, edited, reopened, ready_for_review]
     branches:
       - main
 
