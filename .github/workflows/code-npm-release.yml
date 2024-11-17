@@ -1,0 +1,53 @@
+name: Code NPM Release
+
+on:
+  push:
+    paths:
+      - 'combined/2/code/**'
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  preview-changelog:
+    name: Generate Version Preview and Changelog
+    runs-on: ubuntu-latest
+    env:
+      NODE_VERSION: '20.x'
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Check for Release Label
+        id: check-label
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const labels = context.payload.pull_request.labels.map(label => label.name);
+            core.setOutput('has-release-label', labels.includes('release'));
+
+      - name: Skip if No Release Label
+        if: ${{ steps.check-label.outputs.has-release-label != 'true' }}
+        run: echo "No release label found. Skipping workflow."
+
+      - name: Check semantic versioning
+        if: ${{ steps.check-label.outputs.has-release-label == 'true' }}
+        id: semantic-release       
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}              
+        run: |
+            GITHUB_REF=${{ github.head_ref }}
+            npx semantic-release > semantic-output.txt || true
+            cat semantic-output.txt
+
+    
