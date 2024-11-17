@@ -2,7 +2,7 @@
   "branches": [
     "main"
   ],
-  "tagFormat": "${version}-${branch}",
+  "tagFormat": "${version}",
   "plugins": [
     [
       "@semantic-release/commit-analyzer",
