@@ -2,7 +2,8 @@ name: code-npm-pr-verify
 
 on:
   pull_request:
-    types: [ opened, reopened ]
+    paths:
+      - 'combined/2/code/**'
     branches:
       - main
 

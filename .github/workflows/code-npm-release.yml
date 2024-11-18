@@ -43,6 +43,7 @@ jobs:
           npx semantic-release
   
   build-and-push:
+    needs: generate-version
     name: Build and push image to ECR
     runs-on: ubuntu-latest
     env:
