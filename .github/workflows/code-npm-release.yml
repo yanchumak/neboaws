@@ -50,9 +50,6 @@ jobs:
       APP_NAME: 'webapp'
       CODE_PATH: 'combined/2/code'
     steps:
-      - name: Test
-        run: "echo version: ${{ needs.generate-version.outputs.next-release-version }}"
-
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
@@ -91,7 +88,6 @@ jobs:
         working-directory: ${{ env.CODE_PATH }}
         run: |
           npm version ${{ needs.generate-version.outputs.next-release-version }}-SNAPSHOT --no-git-tag-version
-          git status
           
       - name: Commit changes
         id: commit-changes
@@ -100,5 +96,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add package.json
-          git commit m "ci: prepare next development iteration"
+          git commit -m "ci: prepare next development iteration"
           git push
