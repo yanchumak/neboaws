@@ -42,6 +42,8 @@ jobs:
         run: |
           npm install -g semantic-release@24.2.0 @semantic-release/changelog@6.0.3 @semantic-release/git@10.0.1 @semantic-release/exec@6.0.3
           npx semantic-release
+          echo "NEXT_RELEASE_VERSION=1.0.0" >> $GITHUB_OUTPUT
+
   
   build-and-push:
     needs: generate-version
@@ -71,7 +73,6 @@ jobs:
         id: get-image-name
         working-directory: ${{ env.CODE_PATH }}
         run: |
-          NEXT_RELEASE_VERSION='1.0.0'
           ARTIFACT_NAME=$(npm pkg get name | tr -d '"')
           echo "result=$ARTIFACT_NAME:$NEXT_RELEASE_VERSION" >> $GITHUB_OUTPUT
 
