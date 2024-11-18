@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/yanchumak/neboaws/compare/1.5.0...1.6.0) (2024-11-18)
+
+
+### Features
+
+* WIP ([#13](https://github.com/yanchumak/neboaws/issues/13)) ([288c07b](https://github.com/yanchumak/neboaws/commit/288c07bc554d10db5cc611be041de5e9f3ceab46))
+
 # [1.5.0](https://github.com/yanchumak/neboaws/compare/1.4.0...1.5.0) (2024-11-18)
 
 
