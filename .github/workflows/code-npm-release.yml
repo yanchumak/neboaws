@@ -71,6 +71,8 @@ jobs:
       - name: Get image name
         id: get-image-name
         working-directory: ${{ env.CODE_PATH }}
+        env:
+          NEXT_RELEASE_VERSION: ${{ env.NEXT_RELEASE_VERSION }}
         run: |
           ARTIFACT_NAME=$(npm pkg get name | tr -d '"')
           echo "result=$ARTIFACT_NAME:$NEXT_RELEASE_VERSION" >> $GITHUB_OUTPUT
