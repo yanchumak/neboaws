@@ -1,9 +1,6 @@
 name: code-npm-release
 
 on:
-  pull_request:
-    branches:
-      - main
   push:
     paths:
       - 'combined/2/code/**'
@@ -74,7 +71,7 @@ jobs:
           NEXT_RELEASE_VERSION: ${{ env.NEXT_RELEASE_VERSION }}
         run: |
           ARTIFACT_NAME=$(npm pkg get name | tr -d '"')
-          echo "result=$ARTIFACT_NAME:$NEXT_RELEASE_VERSION" >> $GITHUB_OUTPUT
+          echo "result=$ARTIFACT_NAME:${{ env.NEXT_RELEASE_VERSION }}" >> $GITHUB_OUTPUT
 
       - name: Build image and push to ECR
         id: build-image-push
@@ -91,7 +88,7 @@ jobs:
         id: prepare-next-iteration
         working-directory: ${{ env.CODE_PATH }}
         run: |
-          npm version $NEXT_RELEASE_VERSION-SNAPSHOT --no-git-tag-version
+          npm version ${{ env.NEXT_RELEASE_VERSION }}-SNAPSHOT --no-git-tag-version
           git status
           
       - name: Commit changes
