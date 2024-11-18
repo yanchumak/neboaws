@@ -66,6 +66,7 @@ jobs:
         id: get-image-tag
         working-directory: ${{ env.CODE_PATH }}
         run: |
+          ls -la
           ARTIFACT_NAME=$(npm pkg get name | tr -d '"')
           echo "result=$ARTIFACT_NAME:$NEXT_RELEASE_VERSION" >> $GITHUB_OUTPUT
 
