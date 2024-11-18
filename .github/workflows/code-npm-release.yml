@@ -16,7 +16,6 @@ permissions:
 
 jobs:
   code-npm-verify:
-    name: NPM verify
     uses: ./.github/workflows/code-npm-verify.yml
     with:
       code-path: 'combined/2/code'
@@ -72,6 +71,7 @@ jobs:
         id: get-image-name
         working-directory: ${{ env.CODE_PATH }}
         run: |
+          NEXT_RELEASE_VERSION='1.0.0'
           ARTIFACT_NAME=$(npm pkg get name | tr -d '"')
           echo "result=$ARTIFACT_NAME:$NEXT_RELEASE_VERSION" >> $GITHUB_OUTPUT
 
