@@ -1,20 +1,21 @@
-name: code-npm-node-verify
+name: code-npm-verify
 
 on:
-  pull_request:
-    types: [ opened, reopened ]
-    branches:
-      - main
   workflow_call:
-
+    inputs:
+      code-path:
+        type: string
+        description: 'Path to the code to verify'
+        required: true
+      node-version:
+        type: string
+        description: 'Node version to use'
+        required: false
+        default: '18.x'
 jobs:
-  verify:
+  npm-verify:
+    name: NPM verify
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: combined/2/code
-    env:
-      NODE_VERSION: '18.x'
     steps:
       - name: checkout repository
         uses: actions/checkout@v4
@@ -24,13 +25,14 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache-dependency-path: combined/2/code/package-lock.json
+          node-version: ${{ inputs.node-version }}
+          cache-dependency-path: ${{ inputs.code-path }}/package-lock.json
           cache: 'npm'
 
       - name: Install dependencies
+        working-directory: ${{ inputs.code-path }}
         run: npm install
 
       - name: Run tests
-        run: |
-          npm test
+        working-directory: ${{ inputs.code-path }}
+        run: npm test

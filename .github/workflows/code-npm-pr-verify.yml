@@ -1,0 +1,14 @@
+name: code-npm-pr-verify
+
+on:
+  pull_request:
+    paths:
+      - 'combined/2/code/**'
+    branches:
+      - main
+
+jobs:
+  verify:
+    uses: ./.github/workflows/code-npm-verify.yml
+    with:
+      code-path: 'combined/2/code'

@@ -1,4 +1,4 @@
-name: Pull Request Version Preview
+name: release-preview
 
 on:
   pull_request:
@@ -34,24 +34,25 @@ jobs:
         with:
           script: |
             const labels = context.payload.pull_request.labels.map(label => label.name);
-            core.setOutput('has-release-label', labels.includes('release'));
+            core.setOutput('has-release-preview-label', labels.includes('release-preview'));
 
       - name: Skip if No Release Label
-        if: ${{ steps.check-label.outputs.has-release-label != 'true' }}
+        if: ${{ steps.check-label.outputs.has-release-preview-label != 'true' }}
         run: echo "No release label found. Skipping workflow."
 
       - name: Check semantic versioning
-        if: ${{ steps.check-label.outputs.has-release-label == 'true' }}
+        if: ${{ steps.check-label.outputs.has-release-preview-label == 'true' }}
         id: semantic-release       
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}              
         run: |
             GITHUB_REF=${{ github.head_ref }}
+            npm install -g semantic-release@24.2.0 @semantic-release/changelog@6.0.3 @semantic-release/git@10.0.1 @semantic-release/exec@6.0.3
             npx semantic-release --no-ci --dry-run --branches ${{ github.head_ref }} > semantic-output.txt || true
             cat semantic-output.txt
 
       - name: Post Changelog to PR
-        if: ${{ steps.check-label.outputs.has-release-label == 'true' }}
+        if: ${{ steps.check-label.outputs.has-release-preview-label == 'true' }}
         uses: actions/github-script@v7
         with:
           script: |
