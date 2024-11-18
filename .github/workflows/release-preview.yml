@@ -51,6 +51,9 @@ jobs:
             npx semantic-release --no-ci --dry-run --branches ${{ github.head_ref }} > semantic-output.txt || true
             cat semantic-output.txt
 
+      - name: Test
+        run: "echo version: ${{ env.NEXT_RELEASE_VERSION }}"
+          
       - name: Post Changelog to PR
         if: ${{ steps.check-label.outputs.has-release-preview-label == 'true' }}
         uses: actions/github-script@v7

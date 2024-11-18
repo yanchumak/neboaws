@@ -1,6 +1,9 @@
 name: code-npm-release
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     paths:
       - 'combined/2/code/**'
@@ -39,6 +42,9 @@ jobs:
         run: |
           npm install -g semantic-release@24.2.0 @semantic-release/changelog@6.0.3 @semantic-release/git@10.0.1 @semantic-release/exec@6.0.3
           npx semantic-release
+      
+      - name: Test#1
+        run: "echo version: ${{ env.NEXT_RELEASE_VERSION }}"
 
   build-and-push:
     needs: generate-version
@@ -48,6 +54,9 @@ jobs:
       APP_NAME: 'webapp'
       CODE_PATH: 'combined/2/code'
     steps:
+      - name: Test#2
+        run: "echo version: ${{ env.NEXT_RELEASE_VERSION }}"
+
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
@@ -97,6 +106,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add package.json CHANGELOG.md
+          git add package.json
           git commit m "ci: prepare next development iteration"
           git push
