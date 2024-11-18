@@ -51,6 +51,11 @@ jobs:
       APP_NAME: 'webapp'
       CODE_PATH: 'combined/2/code'
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Configure aws credentials
         uses: aws-actions/configure-aws-credentials@v1.7.0
         with:
@@ -66,7 +71,6 @@ jobs:
         id: get-image-tag
         working-directory: ${{ env.CODE_PATH }}
         run: |
-          ls -la
           ARTIFACT_NAME=$(npm pkg get name | tr -d '"')
           echo "result=$ARTIFACT_NAME:$NEXT_RELEASE_VERSION" >> $GITHUB_OUTPUT
 
