@@ -1,6 +1,9 @@
 name: code-npm-release
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     paths:
       - 'combined/2/code/**'
@@ -21,6 +24,8 @@ jobs:
     needs: code-npm-verify
     name: Generate Version 
     runs-on: ubuntu-latest
+    outputs:
+      next-release-version: ${{ steps.semantic-release.outputs.next-release-version }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -39,7 +44,7 @@ jobs:
         run: |
           npm install -g semantic-release@24.2.0 @semantic-release/changelog@6.0.3 @semantic-release/git@10.0.1 @semantic-release/exec@6.0.3
           npx semantic-release
-
+                  
   build-and-push:
     needs: generate-version
     name: Build and push image to ECR
@@ -48,6 +53,9 @@ jobs:
       APP_NAME: 'webapp'
       CODE_PATH: 'combined/2/code'
     steps:
+      - name: Test
+        run: "echo version: ${{ needs.generate-version.outputs.next-release-version }}"
+
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
@@ -67,17 +75,15 @@ jobs:
       - name: Get image name
         id: get-image-name
         working-directory: ${{ env.CODE_PATH }}
-        env:
-          NEXT_RELEASE_VERSION: ${{ env.NEXT_RELEASE_VERSION }}
         run: |
           ARTIFACT_NAME=$(npm pkg get name | tr -d '"')
-          echo "result=$ARTIFACT_NAME:${{ env.NEXT_RELEASE_VERSION }}" >> $GITHUB_OUTPUT
+          echo "result=$ARTIFACT_NAME:${{ needs.generate-version.outputs.next-release-version }}" >> $GITHUB_OUTPUT
 
       - name: Build image and push to ECR
         id: build-image-push
         working-directory: ${{ env.CODE_PATH }}
         env:
-          ECR_REPOSITORY: "${{ env.APP_NAME }}-ecr"
+          ECR_REPOSITORY: "${{ env.APP_NAME }}"
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_NAME: ${{ steps.get-image-name.outputs.result }}
         run: |
@@ -88,7 +94,7 @@ jobs:
         id: prepare-next-iteration
         working-directory: ${{ env.CODE_PATH }}
         run: |
-          npm version ${{ env.NEXT_RELEASE_VERSION }}-SNAPSHOT --no-git-tag-version
+          npm version ${{ needs.generate-version.outputs.next-release-version }}-SNAPSHOT --no-git-tag-version
           git status
           
       - name: Commit changes
@@ -97,6 +103,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add package.json CHANGELOG.md
+          git add package.json
           git commit m "ci: prepare next development iteration"
           git push
