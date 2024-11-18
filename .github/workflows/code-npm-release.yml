@@ -24,6 +24,8 @@ jobs:
     needs: code-npm-verify
     name: Generate Version 
     runs-on: ubuntu-latest
+    outputs:
+      next-release-version: ${{ steps.semantic-release.outputs.next-release-version }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -42,7 +44,8 @@ jobs:
         run: |
           npm install -g semantic-release@24.2.0 @semantic-release/changelog@6.0.3 @semantic-release/git@10.0.1 @semantic-release/exec@6.0.3
           npx semantic-release
-            
+          echo "next-release-version=1.3.0" >> $GITHUB_OUTPUT"
+                  
   build-and-push:
     needs: generate-version
     name: Build and push image to ECR
@@ -52,7 +55,7 @@ jobs:
       CODE_PATH: 'combined/2/code'
     steps:
       - name: Test
-        run: "echo version: ${{ jobs.semantic-release.outputs.next-release-version }}"
+        run: "echo version: ${{ needs.generate-version.outputs.next-release-version }}"
 
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -75,7 +78,7 @@ jobs:
         working-directory: ${{ env.CODE_PATH }}
         run: |
           ARTIFACT_NAME=$(npm pkg get name | tr -d '"')
-          echo "result=$ARTIFACT_NAME:${{ jobs.semantic-release.outputs.next-release-version }}" >> $GITHUB_OUTPUT
+          echo "result=$ARTIFACT_NAME:${{ needs.generate-version.outputs.next-release-version }}" >> $GITHUB_OUTPUT
 
       - name: Build image and push to ECR
         id: build-image-push
@@ -92,7 +95,7 @@ jobs:
         id: prepare-next-iteration
         working-directory: ${{ env.CODE_PATH }}
         run: |
-          npm version ${{ jobs.semantic-release.outputs.next-release-version }}-SNAPSHOT --no-git-tag-version
+          npm version ${{ needs.generate-version.outputs.next-release-version }}-SNAPSHOT --no-git-tag-version
           git status
           
       - name: Commit changes
