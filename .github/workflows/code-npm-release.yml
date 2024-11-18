@@ -16,6 +16,7 @@ permissions:
 
 jobs:
   code-npm-verify:
+    name: NPM verify
     uses: ./.github/workflows/code-npm-verify.yml
     with:
       code-path: 'combined/2/code'
@@ -67,8 +68,8 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Get image tag
-        id: get-image-tag
+      - name: Get image name
+        id: get-image-name
         working-directory: ${{ env.CODE_PATH }}
         run: |
           ARTIFACT_NAME=$(npm pkg get name | tr -d '"')
@@ -80,10 +81,10 @@ jobs:
         env:
           ECR_REPOSITORY: "${{ env.APP_NAME }}-ecr"
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ steps.get-image-tag.outputs.result }}
+          IMAGE_NAME: ${{ steps.get-image-name.outputs.result }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY/$IMAGE_NAME .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY/$IMAGE_NAME
       
       - name: Prepare next development iteration
         id: prepare-next-iteration
