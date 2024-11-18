@@ -1,3 +1,11 @@
+# [1.5.0](https://github.com/yanchumak/neboaws/compare/1.4.0...1.5.0) (2024-11-18)
+
+
+### Features
+
+* WIN 2 ([de4a8d3](https://github.com/yanchumak/neboaws/commit/de4a8d3da34cfe3a03a8f5c1f150de41d8d992c0))
+* WINN-1234: Add new feature ([#12](https://github.com/yanchumak/neboaws/issues/12)) ([bf854d3](https://github.com/yanchumak/neboaws/commit/bf854d3936ae5b81285d9647d002da67180000be))
+
 # [1.4.0](https://github.com/yanchumak/neboaws/compare/1.3.0...1.4.0) (2024-11-18)
 
 
