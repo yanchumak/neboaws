@@ -52,7 +52,7 @@ jobs:
             cat semantic-output.txt
 
       - name: Test
-        run: "echo version: ${{ env.NEXT_RELEASE_VERSION }}"
+        run: "echo version: ${{ jobs.semantic-release.outputs.next-release-version }}"
           
       - name: Post Changelog to PR
         if: ${{ steps.check-label.outputs.has-release-preview-label == 'true' }}

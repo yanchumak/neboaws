@@ -42,13 +42,7 @@ jobs:
         run: |
           npm install -g semantic-release@24.2.0 @semantic-release/changelog@6.0.3 @semantic-release/git@10.0.1 @semantic-release/exec@6.0.3
           npx semantic-release
-      
-      - name: Test#1
-        run: "echo version: ${{ env.NEXT_RELEASE_VERSION }}"
-      
-      - name: Test#11
-        run: echo "NEXT_RELEASE_VERSION=2.0.1" >> $GITHUB_ENV
-
+            
   build-and-push:
     needs: generate-version
     name: Build and push image to ECR
@@ -57,8 +51,8 @@ jobs:
       APP_NAME: 'webapp'
       CODE_PATH: 'combined/2/code'
     steps:
-      - name: Test#2
-        run: "echo version: ${{ env.NEXT_RELEASE_VERSION }}"
+      - name: Test
+        run: "echo version: ${{ jobs.semantic-release.outputs.next-release-version }}"
 
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -79,11 +73,9 @@ jobs:
       - name: Get image name
         id: get-image-name
         working-directory: ${{ env.CODE_PATH }}
-        env:
-          NEXT_RELEASE_VERSION: ${{ env.NEXT_RELEASE_VERSION }}
         run: |
           ARTIFACT_NAME=$(npm pkg get name | tr -d '"')
-          echo "result=$ARTIFACT_NAME:${{ env.NEXT_RELEASE_VERSION }}" >> $GITHUB_OUTPUT
+          echo "result=$ARTIFACT_NAME:${{ jobs.semantic-release.outputs.next-release-version }}" >> $GITHUB_OUTPUT
 
       - name: Build image and push to ECR
         id: build-image-push
@@ -100,7 +92,7 @@ jobs:
         id: prepare-next-iteration
         working-directory: ${{ env.CODE_PATH }}
         run: |
-          npm version ${{ env.NEXT_RELEASE_VERSION }}-SNAPSHOT --no-git-tag-version
+          npm version ${{ jobs.semantic-release.outputs.next-release-version }}-SNAPSHOT --no-git-tag-version
           git status
           
       - name: Commit changes
