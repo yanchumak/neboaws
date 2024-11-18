@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/yanchumak/neboaws/compare/1.3.0...1.4.0) (2024-11-18)
+
+
+### Features
+
+* WINN-1234: Add new feature ([#11](https://github.com/yanchumak/neboaws/issues/11)) ([37907ff](https://github.com/yanchumak/neboaws/commit/37907ffaa6d90b4c4c2ced3ca64ba6c757373a0d))
+
 # [1.3.0](https://github.com/yanchumak/neboaws/compare/1.2.0...1.3.0) (2024-11-18)
 
 
