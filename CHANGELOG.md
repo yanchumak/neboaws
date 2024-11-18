@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/yanchumak/neboaws/compare/1.2.0...1.3.0) (2024-11-18)
+
+
+### Features
+
+* add new feature ([#10](https://github.com/yanchumak/neboaws/issues/10)) ([225f88c](https://github.com/yanchumak/neboaws/commit/225f88cdef084b2f2689bfd1d1c5b11b549c41b9))
+
 # [1.2.0](https://github.com/yanchumak/neboaws/compare/1.1.0...1.2.0) (2024-11-18)
 
 
