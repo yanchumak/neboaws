@@ -1,6 +1,6 @@
 {
     "name": "webapp",
-    "version": "0.0.3-SNAPSHOT",
+    "version": "0.0.2-SNAPSHOT",
     "description": "A simple Node.js app that returns environment variables",
     "main": "main.js",
     "scripts": {

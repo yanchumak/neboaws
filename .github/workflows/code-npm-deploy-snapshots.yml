@@ -1,4 +1,4 @@
-name: code-npm-node-deploy-snapshots
+name: code-npm-deploy-snapshots
 
 on:
   #pull_request: #TODO remove me
@@ -13,21 +13,14 @@ permissions:
   contents: read
 
 jobs:
-  identify-changes:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Identify changes
-        run: echo "Identifying changes..."
-
   code-npm-verify:
     uses: ./.github/workflows/code-npm-verify.yml
+    with:
+      code-path: 'combined/2/code'
       
   build-and-deploy:
-    environment:
-      name: dev
+    needs: code-npm-verify
+    runs-on: ubuntu-latest
     env: 
       ECS_CLUSTER: ${{ secrets.ECS_CLUSTER }}
       ECS_SERVICE: ${{ secrets.ECS_SERVICE }}
@@ -35,8 +28,6 @@ jobs:
       ECS_CONTAINER_NAME: ${{ secrets.ECS_CONTAINER_NAME }}
       ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
 
-    needs: [identify-changes, code-npm-verify]
-    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

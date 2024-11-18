@@ -1,6 +1,6 @@
 # ECR Repository
 resource "aws_ecr_repository" "main" {
-  name         = "${var.app_name}-ecr-${var.env}"
+  name         = "${var.app_name}-ecr"
   force_delete = true
 
   image_scanning_configuration {

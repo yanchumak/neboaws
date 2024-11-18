@@ -50,8 +50,6 @@ jobs:
             npm install -g semantic-release@24.2.0 @semantic-release/changelog@6.0.3 @semantic-release/git@10.0.1 @semantic-release/exec@6.0.3
             npx semantic-release --no-ci --dry-run --branches ${{ github.head_ref }} > semantic-output.txt || true
             cat semantic-output.txt
-      - name: test
-        run: echo ${{ env.NEXT_RELEASE_VERSION }}
 
       - name: Post Changelog to PR
         if: ${{ steps.check-label.outputs.has-release-preview-label == 'true' }}

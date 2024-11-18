@@ -1,6 +1,9 @@
 name: Code NPM Release
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     paths:
       - 'combined/2/code/**'
@@ -11,12 +14,15 @@ permissions:
   contents: write
 
 jobs:
-  preview-changelog:
-    name: Generate Version Preview and Changelog
-    runs-on: ubuntu-latest
-    env:
-      NODE_VERSION: '20.x'
+  code-npm-verify:
+    uses: ./.github/workflows/code-npm-verify.yml
+    with:
+      code-path: 'combined/2/code'
 
+  generate-version:
+    needs: code-npm-verify
+    name: Generate Version 
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -26,13 +32,65 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: '18.x'	
 
-      - name: Check semantic versioning
+      - name: Run semantic versioning
         id: semantic-release       
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}              
         run: |
+          npm install -g semantic-release@24.2.0 @semantic-release/changelog@6.0.3 @semantic-release/git@10.0.1 @semantic-release/exec@6.0.3
           npx semantic-release
-
+  
+  build-and-push:
+    name: Build and push image to ECR
+    runs-on: ubuntu-latest
+    env:
+      APP_NAME: 'webapp'
+      CODE_PATH: 'combined/2/code'
+    steps:
+      - name: Configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v1.7.0
+        with:
+          role-to-assume: ${{ vars.GH_AWS_ROLE_ARN }}
+          role-session-name: GitHub_to_AWS_via_FederatedOIDC
+          aws-region: ${{ vars.AWS_REGION }}
     
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Get image tag
+        id: get-image-tag
+        working-directory: ${{ env.CODE_PATH }}
+        run: |
+          ARTIFACT_NAME=$(npm pkg get name | tr -d '"')
+          echo "result=$ARTIFACT_NAME:$NEXT_RELEASE_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Build image and push to ECR
+        id: build-image-push
+        working-directory: ${{ env.CODE_PATH }}
+        env:
+          ECR_REPOSITORY: "${{ env.APP_NAME }}-ecr"
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ steps.get-image-tag.outputs.result }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+      
+      - name: Prepare next development iteration
+        id: prepare-next-iteration
+        working-directory: ${{ env.CODE_PATH }}
+        run: |
+          npm version $NEXT_RELEASE_VERSION-SNAPSHOT --no-git-tag-version
+          git status
+          
+      - name: Commit changes
+        id: commit-changes
+        working-directory: ${{ env.CODE_PATH }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json CHANGELOG.md
+          git commit m "ci: prepare next development iteration"
+          git push
