@@ -46,6 +46,9 @@ jobs:
     needs: generate-version
     name: Build and push image to ECR
     runs-on: ubuntu-latest
+    outputs:
+      image-name: ${{ steps.get-image-name.outputs.result }}
+      app-name: ${{ steps.get-app-name.outputs.result }}
     env:
       CODE_PATH: 'combined/2/code'
     steps:
@@ -65,12 +68,17 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Get image name
-        id: get-image-name
+      - name: Get app name
+        id: get-app-name
         working-directory: ${{ env.CODE_PATH }}
         run: |
           APP_NAME=$(npm pkg get name | tr -d '"')
-          echo "result=$APP_NAME:${{ needs.generate-version.outputs.next-release-version }}" >> $GITHUB_OUTPUT
+          echo "result=$APP_NAME" >> $GITHUB_OUTPUT
+
+      - name: Get image name
+        id: get-image-name
+        run: |
+          echo "result=${{ steps.get-app-name.outputs.result }}:${{ needs.generate-version.outputs.next-release-version }}" >> $GITHUB_OUTPUT
 
       - name: Build image and push to ECR
         id: build-image-push
@@ -99,3 +107,11 @@ jobs:
           git add package.json
           git commit -m "Update package.json version to ${{ needs.generate-version.outputs.next-release-version }}"
           git push
+  
+  deploy-to-dev:
+    needs: build-and-push
+    uses: ./.github/workflows/deploy.yml
+    with:
+      env: 'dev'
+      app-name: ${{ needs.build-and-push.outputs.app-name }}
+      image-name: ${{ needs.build-and-push.outputs.image-name }}
