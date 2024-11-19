@@ -90,9 +90,9 @@ jobs:
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: ${{ steps.get-app-name.outputs.result }}-task-def-${{ ENV.env }}
-          container-name: ${{ steps.get-app-name.outputs.result }}-container-${{ ENV.env }}
-          image: ${{ needs.build.outputs.image-url }}
+          task-definition: ${{ steps.get-app-name.outputs.result }}-task-def-dev
+          container-name: ${{ steps.get-app-name.outputs.result }}-container-dev
+          image: nginx:latest
   
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
