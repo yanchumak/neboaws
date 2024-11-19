@@ -25,7 +25,6 @@ jobs:
       image-url: ${{ steps.build-image.outputs.image-url }}
     env:
       CODE_PATH: 'combined/2/code'
-      ENV: 'dev'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -86,18 +85,21 @@ jobs:
           APP_NAME=$(npm pkg get name | tr -d '"')
           echo "result=$APP_NAME" >> $GITHUB_OUTPUT
 
+      - name: Download task definition
+        run: aws ecs describe-task-definition --task-definition ${{ steps.get-app-name.outputs.result }}-task-def-dev --query taskDefinition > task-definition.json
+      
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: ${{ steps.get-app-name.outputs.result }}-task-def-dev
+          task-definition: task-definition.json
           container-name: ${{ steps.get-app-name.outputs.result }}-container-dev
-          image: nginx:latest
+          image: nginx:23.0.0
   
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
           service: "${{ steps.get-app-name.outputs.result }}-service-${{ ENV.env }}"
-          cluster: "${{ steps.get-app-name.outputs.resulte }}-cluster-${{ ENV.env }}"
+          cluster: "${{ steps.get-app-name.outputs.result }}-cluster-${{ ENV.env }}"
           wait-for-service-stability: true
