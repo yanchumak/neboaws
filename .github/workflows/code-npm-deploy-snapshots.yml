@@ -19,6 +19,7 @@ jobs:
       code-path: 'combined/2/code'
 
   build:
+    name: Build and push image to ECR
     needs: verify
     runs-on: ubuntu-latest
     outputs:
@@ -61,11 +62,12 @@ jobs:
           echo "image-url=$ECR_REGISTRY/$ECR_REPOSITORY" >> $GITHUB_OUTPUT
   
   deploy:
+    name: Deploy to ECS
     needs: build
     runs-on: ubuntu-latest
     env:
       CODE_PATH: 'combined/2/code'
-      ENV: dev
+      ENV_NAME: 'dev'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -86,20 +88,20 @@ jobs:
           echo "result=$APP_NAME" >> $GITHUB_OUTPUT
 
       - name: Download task definition
-        run: aws ecs describe-task-definition --task-definition ${{ steps.get-app-name.outputs.result }}-task-def-dev --query taskDefinition > task-definition.json
+        run: aws ecs describe-task-definition --task-definition ${{ steps.get-app-name.outputs.result }}-task-def-${{ ENV.ENV_NAME }} --query taskDefinition > task-definition.json
       
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: task-definition.json
-          container-name: ${{ steps.get-app-name.outputs.result }}-container-dev
+          container-name: ${{ steps.get-app-name.outputs.result }}-container-${{ ENV.ENV_NAME }}
           image: nginx:23.0.0
   
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: "${{ steps.get-app-name.outputs.result }}-service-${{ ENV.env }}"
-          cluster: "${{ steps.get-app-name.outputs.result }}-cluster-${{ ENV.env }}"
+          service: ${{ steps.get-app-name.outputs.result }}-service-${{ ENV.ENV_NAME }}
+          cluster: ${{ steps.get-app-name.outputs.result }}-cluster-${{ ENV.ENV_NAME }}
           wait-for-service-stability: true
