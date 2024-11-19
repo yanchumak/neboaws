@@ -19,6 +19,7 @@ jobs:
       code-path: 'combined/2/code'
 
   build:
+    needs: verify
     runs-on: ubuntu-latest
     outputs:
       image-url: ${{ steps.build-image.outputs.image-url }}
@@ -81,6 +82,7 @@ jobs:
         id: get-app-name
         working-directory: ${{ env.CODE_PATH }}
         run: |
+          echo ${{ needs.build.outputs.image-url }}
           APP_NAME=$(npm pkg get name | tr -d '"')
           echo "result=$APP_NAME" >> $GITHUB_OUTPUT
 
