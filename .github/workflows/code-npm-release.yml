@@ -47,7 +47,6 @@ jobs:
     name: Build and push image to ECR
     runs-on: ubuntu-latest
     env:
-      APP_NAME: 'webapp'
       CODE_PATH: 'combined/2/code'
     steps:
       - name: Checkout Code
@@ -70,8 +69,8 @@ jobs:
         id: get-image-name
         working-directory: ${{ env.CODE_PATH }}
         run: |
-          ARTIFACT_NAME=$(npm pkg get name | tr -d '"')
-          echo "result=$ARTIFACT_NAME:${{ needs.generate-version.outputs.next-release-version }}" >> $GITHUB_OUTPUT
+          APP_NAME=$(npm pkg get name | tr -d '"')
+          echo "result=$APP_NAME:${{ needs.generate-version.outputs.next-release-version }}" >> $GITHUB_OUTPUT
 
       - name: Build image and push to ECR
         id: build-image-push
@@ -83,19 +82,20 @@ jobs:
           docker build -t $ECR_REGISTRY/$IMAGE_NAME .
           docker push $ECR_REGISTRY/$IMAGE_NAME
       
-      - name: Prepare next development iteration
-        id: prepare-next-iteration
+      - name: Update version in package.json
+        id: update-version
         working-directory: ${{ env.CODE_PATH }}
         run: |
-          npm version ${{ needs.generate-version.outputs.next-release-version }}-SNAPSHOT --no-git-tag-version
+          npm version ${{ needs.generate-version.outputs.next-release-version }} --no-git-tag-version
           
       - name: Commit changes
         id: commit-changes
         working-directory: ${{ env.CODE_PATH }}
         run: |
+          git status
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git pull
           git add package.json
-          git commit -m "ci: prepare next development iteration"
+          git commit -m "Update package.json version to ${{ needs.generate-version.outputs.next-release-version }}"
           git push

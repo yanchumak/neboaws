@@ -1,7 +1,7 @@
 name: code-npm-deploy-snapshots
 
 on:
-  #pull_request: #TODO remove me
+  pull_request: #TODO remove me
   push:
     paths:
       - 'combined/2/code/**'
@@ -12,22 +12,19 @@ permissions:
   id-token: write
   contents: read
 
-jobs:
-  code-npm-verify:
+jobs: 
+  verify:
     uses: ./.github/workflows/code-npm-verify.yml
     with:
       code-path: 'combined/2/code'
-      
-  build-and-deploy:
-    needs: code-npm-verify
-    runs-on: ubuntu-latest
-    env: 
-      ECS_CLUSTER: ${{ secrets.ECS_CLUSTER }}
-      ECS_SERVICE: ${{ secrets.ECS_SERVICE }}
-      ECS_TASK_DEFINITION: ${{ secrets.ECS_TASK_DEFINITION }}
-      ECS_CONTAINER_NAME: ${{ secrets.ECS_CONTAINER_NAME }}
-      ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
 
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      image-url: ${{ steps.build-image.outputs.image-url }}
+    env:
+      CODE_PATH: 'combined/2/code'
+      ENV: 'dev'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -38,35 +35,66 @@ jobs:
           role-to-assume: ${{ vars.GH_AWS_ROLE_ARN }}
           role-session-name: GitHub_to_AWS_via_FederatedOIDC
           aws-region: ${{ vars.AWS_REGION }}
-      
+    
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-  
-      - name: Build, tag, and push image to Amazon ECR
-        id: build-image #TODO generate image name
-        working-directory: combined/2/code
+
+      - name: Get image name
+        id: get-image-name
+        working-directory: ${{ env.CODE_PATH }}
+        run: |
+          APP_NAME=$(npm pkg get name | tr -d '"')
+          APP_VERSION=$(npm pkg get version | tr -d '"')
+          SHA_8=$(echo ${GITHUB_SHA} | cut -c1-8)
+          echo "result=$APP_NAME:$APP_VERSION-$SHA_8" >> $GITHUB_OUTPUT
+
+      - name: Build image and push to ECR
+        id: build-image
+        working-directory: ${{ env.CODE_PATH }}
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.sha }}
-          ECR_REPOSITORY: ${{ env.ECR_REPOSITORY }}
+          IMAGE_NAME: ${{ steps.get-image-name.outputs.result }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          docker build -t $ECR_REGISTRY/$IMAGE_NAME .
+          docker push $ECR_REGISTRY/$IMAGE_NAME
+          echo "image-url=$ECR_REGISTRY/$ECR_REPOSITORY" >> $GITHUB_OUTPUT
+  
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      CODE_PATH: 'combined/2/code'
+      ENV: 'dev'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v1.7.0
+        with:
+          role-to-assume: ${{ vars.GH_AWS_ROLE_ARN }}
+          role-session-name: GitHub_to_AWS_via_FederatedOIDC
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Get app name
+        id: get-app-name
+        working-directory: ${{ env.CODE_PATH }}
+        run: |
+          APP_NAME=$(npm pkg get name | tr -d '"')
+          echo "result=$APP_NAME" >> $GITHUB_OUTPUT
 
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: ${{ env.ECS_TASK_DEFINITION }}
-          container-name: ${{ env.ECS_CONTAINER_NAME }}
-          image: ${{ steps.build-image.outputs.image }}
-
+          task-definition: "${{ steps.get-app-name.outputs.result }}-task-def-${{ ENV.env }}"
+          container-name: "${{ steps.get-app-name.outputs.result }}-container-${{ ENV.env }}"
+          image: ${{ needs.build.outputs.image-url }}
+  
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: ${{ env.ECS_SERVICE }}
-          cluster: ${{ env.ECS_CLUSTER }}
+          service: "${{ steps.get-app-name.outputs.result }}-service-${{ ENV.env }}"
+          cluster: "${{ steps.get-app-name.outputs.resulte }}-cluster-${{ ENV.env }}"
           wait-for-service-stability: true
