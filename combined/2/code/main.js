@@ -9,7 +9,7 @@ app.get('/envs', (req, res) => {
 });
 
 app.get('/health', (req, res) => {
-  res.json({ status: 'OK', version: '1.8.0' });
+  res.json({ status: 'OK', version: '1.9.0' });
 });
 
 app.get('/db', (req, res) => {
