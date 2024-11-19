@@ -60,8 +60,6 @@ jobs:
           docker build -t $ECR_REGISTRY/$IMAGE_NAME .
           docker push $ECR_REGISTRY/$IMAGE_NAME
           echo "image-url=$ECR_REGISTRY/$ECR_REPOSITORY" >> $GITHUB_OUTPUT
-      - name: test
-        run:  echo ${{ steps.build-image.outputs.image-url }}
   
   deploy:
     needs: build
@@ -92,8 +90,8 @@ jobs:
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: "${{ steps.get-app-name.outputs.result }}-task-def-${{ ENV.env }}"
-          container-name: "${{ steps.get-app-name.outputs.result }}-container-${{ ENV.env }}"
+          task-definition: ${{ steps.get-app-name.outputs.result }}-task-def-${{ ENV.env }}
+          container-name: ${{ steps.get-app-name.outputs.result }}-container-${{ ENV.env }}
           image: ${{ needs.build.outputs.image-url }}
   
       - name: Deploy Amazon ECS task definition
