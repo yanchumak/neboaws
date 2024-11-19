@@ -91,8 +91,9 @@ jobs:
 
       - name: Download task definition
         run: |
+          echo "${{ steps.login-ecr.outputs.registry }}"
+          echo "${{ needs.build.outputs.image-name }}
           aws ecs describe-task-definition --task-definition ${{ steps.get-app-name.outputs.result }}-task-def-${{ ENV.ENV_NAME }} --query taskDefinition > task-definition.json
-          cat task-definition.json
       
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
@@ -103,7 +104,7 @@ jobs:
         with:
           task-definition: task-definition.json
           container-name: ${{ steps.get-app-name.outputs.result }}-container-${{ ENV.ENV_NAME }}
-          image: "$ECR_REGISTRY/$IMAGE_NAME"
+          image: nginx:23.0.0
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2.1.2
