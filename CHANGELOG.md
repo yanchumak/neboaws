@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/yanchumak/neboaws/compare/1.6.0...1.7.0) (2024-11-19)
+
+
+### Features
+
+* first deployment to dev ([#14](https://github.com/yanchumak/neboaws/issues/14)) ([0516803](https://github.com/yanchumak/neboaws/commit/05168037e357c57ed2a2e1c56bfc2916f0ece603))
+
 # [1.6.0](https://github.com/yanchumak/neboaws/compare/1.5.0...1.6.0) (2024-11-18)
 
 
