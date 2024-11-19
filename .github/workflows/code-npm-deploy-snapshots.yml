@@ -92,7 +92,7 @@ jobs:
       - name: Download task definition
         run: |
           echo "${{ steps.login-ecr.outputs.registry }}"
-          echo "${{ needs.build.outputs.image-name }}
+          echo "${{ needs.build.outputs.image-name }}"
           aws ecs describe-task-definition --task-definition ${{ steps.get-app-name.outputs.result }}-task-def-${{ ENV.ENV_NAME }} --query taskDefinition > task-definition.json
       
       - name: Fill in the new image ID in the Amazon ECS task definition
