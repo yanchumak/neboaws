@@ -96,12 +96,11 @@ jobs:
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1.6.0
         env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_NAME: ${{ needs.build.outputs.image-name }}
         with:
           task-definition: task-definition.json
           container-name: ${{ steps.get-app-name.outputs.result }}-container-${{ ENV.ENV_NAME }}
-          image: $ECR_REGISTRY/$IMAGE_NAME
+          image: $IMAGE_NAME
 
   
       - name: Deploy Amazon ECS task definition
