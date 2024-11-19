@@ -60,6 +60,8 @@ jobs:
           docker build -t $ECR_REGISTRY/$IMAGE_NAME .
           docker push $ECR_REGISTRY/$IMAGE_NAME
           echo "image-url=$ECR_REGISTRY/$ECR_REPOSITORY" >> $GITHUB_OUTPUT
+      - name: test
+        run:  echo ${{ steps.build-image.outputs.image-url }}
   
   deploy:
     needs: build
