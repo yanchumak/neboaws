@@ -103,7 +103,7 @@ jobs:
         with:
           task-definition: task-definition.json
           container-name: ${{ steps.get-app-name.outputs.result }}-container-${{ ENV.ENV_NAME }}
-          image: $ECR_REGISTRY/$IMAGE_NAME
+          image: "$ECR_REGISTRY/$IMAGE_NAME"
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2.1.2
