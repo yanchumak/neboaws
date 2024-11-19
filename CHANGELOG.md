@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/yanchumak/neboaws/compare/1.7.0...1.8.0) (2024-11-19)
+
+
+### Features
+
+* added important feature ([#15](https://github.com/yanchumak/neboaws/issues/15)) ([d4d5692](https://github.com/yanchumak/neboaws/commit/d4d56924e80edd5fc242ace99963faf1cdceaf1b))
+
 # [1.7.0](https://github.com/yanchumak/neboaws/compare/1.6.0...1.7.0) (2024-11-19)
 
 
