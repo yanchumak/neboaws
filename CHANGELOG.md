@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/yanchumak/neboaws/compare/1.8.0...1.9.0) (2024-11-19)
+
+
+### Features
+
+* add ecr permissions and private ecr images ([9bff076](https://github.com/yanchumak/neboaws/commit/9bff0760b2375293668dd6fc29441ee471db088f))
+
 # [1.8.0](https://github.com/yanchumak/neboaws/compare/1.7.0...1.8.0) (2024-11-19)
 
 
