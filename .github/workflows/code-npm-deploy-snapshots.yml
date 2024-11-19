@@ -1,7 +1,6 @@
 name: code-npm-deploy-snapshots
 
 on:
-  pull_request: #TODO remove me
   push:
     paths:
       - 'combined/2/code/**'
