@@ -19,30 +19,21 @@ jobs:
 
   generate-version:
     needs: code-npm-verify
-    name: Generate Version 
     runs-on: ubuntu-latest
     outputs:
-      next-release-version: ${{ steps.semantic-release.outputs.next-release-version }}
+      next-release-version: ${{ steps.generate-version.outputs.next-release-version }}
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.x'	
-
-      - name: Run semantic versioning
-        id: semantic-release       
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}              
+      - name: Generate version
+        id: generate-version            
         run: |
-          npm install -g semantic-release@24.2.0 @semantic-release/changelog@6.0.3 @semantic-release/git@10.0.1 @semantic-release/exec@6.0.3
-          npx semantic-release
+            npm install -g semantic-release@24.2.0 @semantic-release/changelog@6.0.3 @semantic-release/git@10.0.1 @semantic-release/exec@6.0.3
+            npx semantic-release --no-ci --dry-run
+      
+      - name: Echo next release version
+        run: "echo Next release version: ${{ steps.generate-version.outputs.next-release-version }}"
                   
   build-and-push:
+    if: ${{ needs.generate-version.outputs.next-release-version !='' }}
     needs: generate-version
     name: Build and push image to ECR
     runs-on: ubuntu-latest
@@ -108,8 +99,33 @@ jobs:
           git commit -m "Update package.json version to ${{ needs.generate-version.outputs.next-release-version }}"
           git push
   
+  semantic-release:
+    if: ${{ needs.generate-version.outputs.next-release-version !='' }}
+    needs: [generate-version, build-and-push]
+    name: Semantic Release 
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'	
+
+      - name: Run semantic versioning
+        id: semantic-release       
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}              
+        run: |
+          npm install -g semantic-release@24.2.0 @semantic-release/changelog@6.0.3 @semantic-release/git@10.0.1 @semantic-release/exec@6.0.3
+          npx semantic-release
+          
   deploy-to-dev:
-    needs: build-and-push
+    if: ${{ needs.generate-version.outputs.next-release-version !='' }}
+    needs: [build-and-push, generate-version, build-and-push]
     uses: ./.github/workflows/deploy.yml
     with:
       env: 'dev'
@@ -117,8 +133,8 @@ jobs:
       image-name: ${{ needs.build-and-push.outputs.image-name }}
   
   notify:
-    if: ${{ ! cancelled() }}
-    needs: [generate-version, build-and-push, deploy-to-dev]
+    if: ${{ ! cancelled() && needs.generate-version.outputs.next-release-version !=''}}
+    needs: [generate-version, semantic-release, build-and-push, deploy-to-dev]
     name: Notify
     runs-on: ubuntu-latest
     steps:
@@ -127,4 +143,5 @@ jobs:
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_TITLE: "Code Release"
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: "Code Release - ${{ needs.generate-version.outputs.next-release-version }}"
