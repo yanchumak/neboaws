@@ -159,7 +159,9 @@ jobs:
         uses: actions/github-script@v7
         with: 
           script: |
-            const failedJobs = context.payload.workflow_run.jobs.filter(job => job.conclusion === 'failure');
+            const needs = ${JSON.stringify(github.context.payload.workflow_run.jobs)};
+            console.log('Needs:', needs);
+            const failedJobs = needs.filter(job => job.conclusion === 'failure');
             console.log('Failed jobs:', failedJobs);
             core.setOutput('result', failedJobs.map(job => job.name).join(', '));
 
