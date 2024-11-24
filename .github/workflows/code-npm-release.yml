@@ -26,6 +26,13 @@ jobs:
     outputs:
       next-release-version: ${{ steps.generate-version.outputs.next-release-version }}
     steps:
+      - name: Determine Failed Jobs
+        id: failed-jobs
+        uses: actions/github-script@v7
+        with: 
+          script: |
+            console.log('Payload:', context.payload);
+            
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
@@ -141,7 +148,7 @@ jobs:
           
   deploy-to-dev:
     if: ${{ needs.generate-version.outputs.next-release-version !='' }}
-    needs: [build-and-push, generate-version, build-and-push]
+    needs: [generate-version, semantic-release, build-and-push]
     uses: ./.github/workflows/deploy.yml
     with:
       env: 'dev'
