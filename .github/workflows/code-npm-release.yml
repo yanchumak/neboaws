@@ -25,14 +25,7 @@ jobs:
       NODE_VERSION: '20.x'
     outputs:
       next-release-version: ${{ steps.generate-version.outputs.next-release-version }}
-    steps:
-      - name: Determine Failed Jobs
-        id: failed-jobs
-        uses: actions/github-script@v7
-        with: 
-          script: |
-            console.log('github.event:', github);
-            
+    steps:            
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
@@ -161,22 +154,10 @@ jobs:
     name: Notify
     runs-on: ubuntu-latest
     steps:
-      - name: Determine Failed Jobs
-        id: failed-jobs
-        uses: actions/github-script@v7
-        with: 
-          script: |
-            console.log('Payload:', github.context.payload.workflow_run);
-            const jobs = JSON.stringify(github.context.payload.workflow_run.jobs);
-            console.log('Jobs:', jobs);
-            const failedJobs = needs.filter(job => job.conclusion === 'failure');
-            console.log('Failed jobs:', failedJobs);
-            core.setOutput('result', failedJobs.map(job => job.name).join(', '));
-
       - uses: actions/checkout@v4
       - name: Slack Notification
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_COLOR: ${{ steps.failed-jobs.outputs.result == '' && 'good' || 'danger' }}
+          SLACK_COLOR: ${{ needs.semantic-release.result == 'success' && 'good' || 'danger' }}
           SLACK_TITLE: "Code Release - ${{ needs.generate-version.outputs.next-release-version }}"
