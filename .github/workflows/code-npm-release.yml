@@ -20,9 +20,21 @@ jobs:
   generate-version:
     needs: code-npm-verify
     runs-on: ubuntu-latest
+    env:
+      NODE_VERSION: '20.x'
     outputs:
       next-release-version: ${{ steps.generate-version.outputs.next-release-version }}
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
       - name: Generate version
         id: generate-version            
         run: |
