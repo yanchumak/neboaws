@@ -156,17 +156,12 @@ jobs:
     steps:
       - name: Determine Failed Jobs
         id: failed-jobs
-        run: |
-          echo "Checking failed jobs..."
-          FAILED_JOBS=""
-          for JOB in generate-version semantic-release build-and-push; do
-            JOB_RESULT="${{ needs[JOB].result }}"
-            if [ "$JOB_RESULT" != "success" ]; then
-              FAILED_JOBS="$FAILED_JOBS $JOB: $JOB_RESULT\n"
-            fi
-          done
-          echo "result=$FAILED_JOBS" >> $GITHUB_OUTPUT
-          echo "Failed jobs: $FAILED_JOBS"
+        uses: actions/github-script@v7
+        with: 
+          script: |
+            const failedJobs = context.payload.workflow_run.jobs.filter(job => job.conclusion === 'failure');
+            console.log('Failed jobs:', failedJobs);
+            core.setOutput('result', failedJobs.map(job => job.name).join(', '));
 
       - uses: actions/checkout@v4
       - name: Slack Notification
