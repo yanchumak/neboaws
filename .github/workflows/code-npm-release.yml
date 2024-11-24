@@ -116,3 +116,14 @@ jobs:
       app-name: ${{ needs.build-and-push.outputs.app-name }}
       image-name: ${{ needs.build-and-push.outputs.image-name }}
   
+  notify:
+    if: ${{ ! cancelled() }}
+    needs: [generate-version, build-and-push, deploy-to-dev]
+    name: Notify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
