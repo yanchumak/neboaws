@@ -1,3 +1,11 @@
+# [1.11.0](https://github.com/yanchumak/neboaws/compare/1.10.0...1.11.0) (2024-11-24)
+
+
+### Features
+
+* add slack notification to code-npm-release workflow ([7836e19](https://github.com/yanchumak/neboaws/commit/7836e19e2ee34ba8f2f3c4c610acf2c1ab94f46e))
+* Added slack integration to the release workflow ([d51d7c8](https://github.com/yanchumak/neboaws/commit/d51d7c8e59bd90ca09e6f9da22abd4e846feafbb))
+
 # [1.10.0](https://github.com/yanchumak/neboaws/compare/1.9.0...1.10.0) (2024-11-24)
 
 
