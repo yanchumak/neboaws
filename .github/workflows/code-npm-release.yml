@@ -147,15 +147,28 @@ jobs:
       image-name: ${{ needs.build-and-push.outputs.image-name }}
   
   notify:
-    if: ${{ ! cancelled() && needs.generate-version.outputs.next-release-version !=''}}
+    if: ${{ ! cancelled() }}
     needs: [generate-version, semantic-release, build-and-push, deploy-to-dev]
     name: Notify
     runs-on: ubuntu-latest
     steps:
+      - name: Determine Failed Jobs
+        id: failed-jobs
+        run: |
+          echo "Checking failed jobs..."
+          FAILED_JOBS=""
+          for JOB in build test artifact; do
+            JOB_RESULT="${{ needs[JOB].result }}"
+            if [ "$JOB_RESULT" != "success" ]; then
+              FAILED_JOBS="$FAILED_JOBS $JOB: $JOB_RESULT\n"
+            fi
+          done
+          echo "result=$FAILED_JOBS" >> $GITHUB_OUTPUT
+
       - uses: actions/checkout@v4
       - name: Slack Notification
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_COLOR: ${{ job.status }}
+          SLACK_COLOR: ${{ steps.failed-jobs.outputs.result == '' && 'good' || 'danger' }}
           SLACK_TITLE: "Code Release - ${{ needs.generate-version.outputs.next-release-version }}"
