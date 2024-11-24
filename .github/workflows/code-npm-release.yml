@@ -41,7 +41,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}          
         run: |
-            git pull
             npm install -g semantic-release@24.2.0 @semantic-release/changelog@6.0.3 @semantic-release/git@10.0.1 @semantic-release/exec@6.0.3
             npx semantic-release --no-ci --dry-run
       
@@ -136,6 +135,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}              
         run: |
+          git pull
           npm install -g semantic-release@24.2.0 @semantic-release/changelog@6.0.3 @semantic-release/git@10.0.1 @semantic-release/exec@6.0.3
           npx semantic-release
           
@@ -159,7 +159,7 @@ jobs:
         run: |
           echo "Checking failed jobs..."
           FAILED_JOBS=""
-          for JOB in build test artifact; do
+          for JOB in generate-version semantic-release build-and-push; do
             JOB_RESULT="${{ needs[JOB].result }}"
             if [ "$JOB_RESULT" != "success" ]; then
               FAILED_JOBS="$FAILED_JOBS $JOB: $JOB_RESULT\n"
