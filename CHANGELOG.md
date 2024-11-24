@@ -1,3 +1,10 @@
+# [1.14.0](https://github.com/yanchumak/neboaws/compare/1.13.0...1.14.0) (2024-11-24)
+
+
+### Features
+
+* Added slack integration ([adce868](https://github.com/yanchumak/neboaws/commit/adce8681ffbbb1a30c74a3fc141f03d164f35f05))
+
 # [1.13.0](https://github.com/yanchumak/neboaws/compare/1.12.0...1.13.0) (2024-11-24)
 
 
