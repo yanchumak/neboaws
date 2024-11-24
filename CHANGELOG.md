@@ -1,3 +1,16 @@
+# [1.12.0](https://github.com/yanchumak/neboaws/compare/1.11.0...1.12.0) (2024-11-24)
+
+
+### Features
+
+* add new feature ([076426b](https://github.com/yanchumak/neboaws/commit/076426bce92e4a10138c26829bc6e40af00c5b30))
+* add new feature ([59fb872](https://github.com/yanchumak/neboaws/commit/59fb872c1426fbb677027ba0f9d8e33c3dfd8a19))
+* add new feature ([5a9e6ee](https://github.com/yanchumak/neboaws/commit/5a9e6ee7862f7146bbaad2d636e50549d8294c57))
+* Fix the calculator ([988d2a6](https://github.com/yanchumak/neboaws/commit/988d2a6e56d59d7e7ff8a2f7fa0b89437b41dcf8))
+* refactor calculator to use a class ([bb42bb5](https://github.com/yanchumak/neboaws/commit/bb42bb5ce57132b99a824565882878d85f70d86d))
+* Refactor calculator to use a class ([690d386](https://github.com/yanchumak/neboaws/commit/690d38642c49f50955ca6e3193d02b8bc037963f))
+* refactor calculator.js ([0401221](https://github.com/yanchumak/neboaws/commit/040122165143fa356251ff9184f6edcc8c58cb0f))
+
 # [1.11.0](https://github.com/yanchumak/neboaws/compare/1.10.0...1.11.0) (2024-11-24)
 
 
