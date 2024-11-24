@@ -1,1 +1,1 @@
-# neboaws
+[![code-npm-release](https://github.com/yanchumak/neboaws/actions/workflows/code-npm-release.yml/badge.svg?branch=main)](https://github.com/yanchumak/neboaws/actions/workflows/code-npm-release.yml)

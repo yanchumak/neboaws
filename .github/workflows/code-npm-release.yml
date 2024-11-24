@@ -115,3 +115,4 @@ jobs:
       env: 'dev'
       app-name: ${{ needs.build-and-push.outputs.app-name }}
       image-name: ${{ needs.build-and-push.outputs.image-name }}
+  
