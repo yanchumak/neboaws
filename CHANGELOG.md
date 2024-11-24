@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/yanchumak/neboaws/compare/1.9.0...1.10.0) (2024-11-24)
+
+
+### Features
+
+* add status bage to README.md ([7a45389](https://github.com/yanchumak/neboaws/commit/7a4538941126d1e44cc7b317e9c2b5e28d6297be))
+
 # [1.9.0](https://github.com/yanchumak/neboaws/compare/1.8.0...1.9.0) (2024-11-19)
 
 
