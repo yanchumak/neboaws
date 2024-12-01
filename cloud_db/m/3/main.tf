@@ -2,6 +2,8 @@ locals {
   vpc_cidr        = "10.0.0.0/16"
   public_subnets  = ["10.0.1.0/24"]
   private_subnets = ["10.0.2.0/24"]
+  azs             = ["us-east-1a"]
+  redis_port      = 6379
 }
 
 # VPC Module
@@ -11,7 +13,7 @@ module "vpc" {
 
   name               = "vpc-for-redis"
   cidr               = local.vpc_cidr
-  azs                = ["us-east-1a"]
+  azs                = local.azs
   public_subnets     = local.public_subnets
   private_subnets    = local.private_subnets
   enable_nat_gateway = true
@@ -30,23 +32,39 @@ resource "aws_security_group" "ec2_ssm_sg" {
   }
 }
 
-# EC2 related resources
-resource "aws_security_group" "ec2_redis_sg" {
+resource "aws_security_group" "redis_sg" {
   vpc_id = module.vpc.vpc_id
 
-  egress {
-    from_port   = 6379
-    to_port     = 6379
+  ingress {
+    from_port   = local.redis_port
+    to_port     = local.redis_port
     protocol    = "tcp"
-    cidr_blocks = [local.private_subnets[0]]
+    cidr_blocks = local.private_subnets
   }
 }
 
+resource "aws_security_group" "ec2_sg" {
+  vpc_id = module.vpc.vpc_id
 
+  egress {
+    from_port   = local.redis_port
+    to_port     = local.redis_port
+    protocol    = "tcp"
+    cidr_blocks = local.private_subnets
+  }
+}
 
-# Redis related resources
-# Create an ElastiCache user with IAM Authentication
-resource "aws_elasticache_user" "this" {
+resource "aws_elasticache_user" "default" {
+  user_id       = "defaultuserid"
+  user_name     = "default"
+  access_string = "off -@all"
+  engine        = "REDIS"
+  authentication_mode {
+    type = "no-password-required"
+  }
+}
+
+resource "aws_elasticache_user" "user" {
   user_id       = "user"
   user_name     = "user"
   engine        = "REDIS"
@@ -56,52 +74,45 @@ resource "aws_elasticache_user" "this" {
   }
 }
 
-# Create a user group and associate the user
 resource "aws_elasticache_user_group" "this" {
   user_group_id = "elastic-group"
   engine        = "REDIS"
-  user_ids      = [aws_elasticache_user.this.user_id, "default"]
+  user_ids = [
+    aws_elasticache_user.user.user_id,
+    aws_elasticache_user.default.user_id
+  ]
 }
 
-module "elasticache" {
-  source  = "terraform-aws-modules/elasticache/aws"
-  version = "1.3.0"
 
-  cluster_id               = "redis1"
-  create_cluster           = true
-  create_replication_group = false
-  cluster_mode             = false
-
-  engine_version = "7.1"
-  node_type      = "cache.t4g.small"
-
-  maintenance_window = "sun:05:00-sun:09:00"
-  apply_immediately  = true
-
-  # Security group
-  vpc_id = module.vpc.vpc_id
-
-  security_group_rules = {
-    ingress_vpc = {
-      description = "VPC traffic"
-      cidr_ipv4   = local.private_subnets[0]
-    }
-  }
-
-  user_group_ids = [aws_elasticache_user_group.this.id]
-
-  # Subnet Group
+resource "aws_elasticache_subnet_group" "this" {
+  name       = "elasticache-subnet-group"
   subnet_ids = module.vpc.private_subnets
+}
 
-  # Parameter Group
-  create_parameter_group = true
-  parameter_group_family = "redis7"
-  parameters = [
-    {
-      name  = "latency-tracking"
-      value = "yes"
-    }
-  ]
+resource "aws_elasticache_replication_group" "this" {
+  automatic_failover_enabled  = false
+  multi_az_enabled            = false
+  transit_encryption_enabled  = true
+  engine                      = "redis"
+  replication_group_id        = "rg1"
+  description                 = "Redis Replication Group"
+  node_type                   = "cache.t4g.micro"
+  num_cache_clusters          = 1
+  user_group_ids = [ aws_elasticache_user_group.this.user_group_id ]
+  port                        = local.redis_port
+  subnet_group_name           = aws_elasticache_subnet_group.this.name
+  security_group_ids          = [aws_security_group.redis_sg.id]
+
+  lifecycle {
+    ignore_changes = [num_cache_clusters]
+  }
+}
+
+resource "aws_elasticache_cluster" "replica" {
+  count = 1
+
+  cluster_id                 = "rg1-replica-${count.index + 1}"
+  replication_group_id       = aws_elasticache_replication_group.this.id
 }
 
 # IAM Role
@@ -116,9 +127,9 @@ resource "aws_iam_role" "ec2_role" {
         Effect = "Allow",
         Principal = {
           Service = "ec2.amazonaws.com",
-        },
-      },
-    ],
+        }
+      }
+    ]
   })
 }
 
@@ -134,6 +145,10 @@ resource "aws_iam_instance_profile" "ssm_instance_profile" {
   role = aws_iam_role.ec2_role.name
 }
 
+data "aws_region" "current" {}
+
+data "aws_caller_identity" "current" {}
+
 # Attach policy to allow access to ElastiCache
 resource "aws_iam_policy" "redis_access_policy" {
   name        = "redis_access_policy"
@@ -142,9 +157,14 @@ resource "aws_iam_policy" "redis_access_policy" {
     Version = "2012-10-17"
     Statement = [
       {
-        Action   = ["elasticache:Connect", "elasticache:Describe*"],
-        Effect   = "Allow",
-        Resource = module.elasticache.cluster_arn
+        Action = [
+          "elasticache:Connect"
+        ],
+        Effect = "Allow",
+        Resource = [
+          "arn:aws:elasticache:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:replicationgroup:${aws_elasticache_replication_group.this.id}",
+          "arn:aws:elasticache:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:user:${aws_elasticache_user.user.user_id}"
+        ]
       }
     ]
   })
@@ -164,7 +184,7 @@ module "ec2_instance" {
   ami                    = "ami-066784287e358dad1"
   instance_type          = "t2.micro"
   subnet_id              = module.vpc.private_subnets[0]
-  vpc_security_group_ids = [aws_security_group.ec2_ssm_sg.id, aws_security_group.ec2_redis_sg.id]
+  vpc_security_group_ids = [aws_security_group.ec2_ssm_sg.id, aws_security_group.ec2_sg.id]
   iam_instance_profile   = aws_iam_instance_profile.ssm_instance_profile.name
 }
 
