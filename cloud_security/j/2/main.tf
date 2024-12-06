@@ -93,7 +93,7 @@ module "ec2_instance" {
   user_data = <<-EOF
               #!/bin/bash
               yum install -y httpd
-              systemctl start httpd
+              systemctl start httpd 
               systemctl enable httpd
               echo "Hello World from $(hostname -f)" > /var/www/html/index.html
               EOF
