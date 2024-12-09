@@ -49,7 +49,9 @@ jobs:
     
      - name: Terraform init
        id: init
-       run: terraform init -backend-config="bucket=$BUCKET_TF_STATE" -backend-config="region=$BUCKET_TF_REGION"
+       run: terraform init \
+        -backend-config="bucket=$BUCKET_TF_STATE" \
+        -backend-config="region=$BUCKET_TF_REGION" 
  
      - name: Terraform format
        id: fmt
@@ -62,7 +64,7 @@ jobs:
      - name: Terraform plan
        id: plan
        if: github.event_name == 'pull_request'
-       run: terraform plan -no-color -input=false
+       run: terraform plan -no-color -input=false -var region="${{ vars.AWS_REGION }}" 
        continue-on-error: true
  
      - name: Terraform Plan Status
@@ -71,4 +73,4 @@ jobs:
  
      - name: Terraform Apply
        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-       run: terraform apply -auto-approve -input=false
+       run: terraform apply -auto-approve -input=false -var region="${{ vars.AWS_REGION }}" 
