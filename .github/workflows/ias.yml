@@ -13,8 +13,6 @@ on:
    - combined/2/ias/environments/dev/**
  
 env:
- # verbosity setting for Terraform logs
- TF_LOG: INFO
  BUCKET_TF_STATE: ${{ secrets.BUCKET_TF_STATE}}
  BUCKET_TF_REGION: ${{ secrets.BUCKET_TF_REGION}}
  
