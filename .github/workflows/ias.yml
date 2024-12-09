@@ -16,6 +16,7 @@ env:
  # verbosity setting for Terraform logs
  TF_LOG: INFO
  BUCKET_TF_STATE: ${{ secrets.BUCKET_TF_STATE}}
+ BUCKET_TF_REGION: ${{ secrets.BUCKET_TF_REGION}}
  
 permissions:
   contents: write
@@ -48,7 +49,7 @@ jobs:
     
      - name: Terraform init
        id: init
-       run: terraform init -backend-config="bucket=$BUCKET_TF_STATE"
+       run: terraform init -backend-config="bucket=$BUCKET_TF_STATE" -backend-config="region=$BUCKET_TF_REGION"
  
      - name: Terraform format
        id: fmt
