@@ -5,12 +5,12 @@ on:
    branches:
    - main
    paths:
-   - combined/2/code/environments/dev/**
+   - combined/2/ias/environments/dev/**
  pull_request:
    branches:
    - main
    paths:
-   - combined/2/code/environments/dev/**
+   - combined/2/ias/environments/dev/**
  
 env:
  # verbosity setting for Terraform logs
@@ -28,7 +28,7 @@ jobs:
    defaults:
      run:
        shell: bash
-       working-directory: ./combined/2/code/environments/dev
+       working-directory: ./combined/2/ias/environments/dev
  
    steps:
      - name: Checkout the repository to the runner
