@@ -1,0 +1,73 @@
+name: "Terraform Infrastructure Change Management Pipeline with GitHub Actions"
+ 
+on:
+ push:
+   branches:
+   - main
+   paths:
+   - combined/2/code/environments/dev/**
+ pull_request:
+   branches:
+   - main
+   paths:
+   - combined/2/code/environments/dev/**
+ 
+env:
+ # verbosity setting for Terraform logs
+ TF_LOG: INFO
+ BUCKET_TF_STATE: ${{ secrets.BUCKET_TF_STATE}}
+ 
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+ terraform:
+   name: "Terraform Infrastructure Change Management"
+   runs-on: ubuntu-latest
+   defaults:
+     run:
+       shell: bash
+       working-directory: ./combined/2/code/environments/dev
+ 
+   steps:
+     - name: Checkout the repository to the runner
+       uses: actions/checkout@v2
+
+     - name: Configure aws credentials
+       uses: aws-actions/configure-aws-credentials@v1.7.0
+       with:
+        role-to-assume: ${{ vars.GH_AWS_ROLE_ARN }}
+        role-session-name: GitHub_to_AWS_via_FederatedOIDC
+        aws-region: ${{ vars.AWS_REGION }}
+    
+     - name: Setup Terraform with specified version on the runner
+       uses: hashicorp/setup-terraform@v2
+       with:
+         terraform_version: 1.3.0
+    
+     - name: Terraform init
+       id: init
+       run: terraform init -backend-config="bucket=$BUCKET_TF_STATE"
+ 
+     - name: Terraform format
+       id: fmt
+       run: terraform fmt -check
+    
+     - name: Terraform validate
+       id: validate
+       run: terraform validate
+ 
+     - name: Terraform plan
+       id: plan
+       if: github.event_name == 'pull_request'
+       run: terraform plan -no-color -input=false
+       continue-on-error: true
+ 
+     - name: Terraform Plan Status
+       if: steps.plan.outcome == 'failure'
+       run: exit 1
+ 
+     - name: Terraform Apply
+       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+       run: terraform apply -auto-approve -input=false

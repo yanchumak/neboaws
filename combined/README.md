@@ -14,3 +14,4 @@
  - Continuous Integration - Configure Continuous Integration and Deployment (Delivery) flows from scratch 
  - Cloud Container - Monitor Containerized Infrastructure
  - Cloud DB - Provision of Relational DB
+ - Configuration Management - Use secret management tool while using automated configuration and provisioning infrastructure
