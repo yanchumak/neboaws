@@ -31,7 +31,7 @@ module "storage" {
   db_port              = local.db_port
   db_name              = local.db_name
   vpc_id               = module.network.vpc_id
-  db_allowed_sg_ids    = [ module.compute.ecs_sg_id, module.compute.jump_host_sg_id ]
+  db_allowed_sg_ids    = [module.compute.ecs_sg_id, module.compute.jump_host_sg_id]
   db_subnet_group_name = module.network.vpc_database_subnet_group
 }
 
