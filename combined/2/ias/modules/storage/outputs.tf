@@ -7,6 +7,6 @@ output "db_port" {
 }
 
 output "db_instance_master_user_secret_arn" {
-  value = module.mysql_db.db_instance_master_user_secret_arn
+  value = data.aws_secretsmanager_secret.rds_credentials.arn
 
 }

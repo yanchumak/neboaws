@@ -59,6 +59,14 @@ module "rds_sg" {
   }
 }
 
+data "aws_secretsmanager_secret" "rds_credentials" {
+  name = "rds_credentials"
+}
+
+data "aws_secretsmanager_secret_version" "rds_credentials" {
+  secret_id = data.aws_secretsmanager_secret.rds_credentials.id
+}
+
 module "mysql_db" {
   source  = "terraform-aws-modules/rds/aws"
   version = "6.10.0"
@@ -75,8 +83,9 @@ module "mysql_db" {
   max_allocated_storage = 10
 
   db_name                     = var.db_name
-  username                    = var.db_username
-  manage_master_user_password = true
+  username          = jsondecode(data.aws_secretsmanager_secret_version.rds_credentials.secret_string).username
+  password          = jsondecode(data.aws_secretsmanager_secret_version.rds_credentials.secret_string).password
+  manage_master_user_password = false
   port                        = var.db_port
 
   multi_az               = false

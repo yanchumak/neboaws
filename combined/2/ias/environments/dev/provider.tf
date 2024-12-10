@@ -7,4 +7,8 @@ terraform {
   }
 
   required_version = ">= 1.8.5"
+
+  backend "s3" {
+    key = "terraform.tfstate"
+  }
 }

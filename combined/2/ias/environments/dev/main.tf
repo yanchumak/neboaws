@@ -8,7 +8,6 @@ locals {
   vpc_cidr           = "10.0.0.0/16"
   db_instance_class  = "db.t3.small"
   db_port            = 3306
-  db_username        = var.db_username
   db_name            = "appdb"
   app_name           = "webapp"
   app_container_port = 80
@@ -31,9 +30,8 @@ module "storage" {
   db_instance_class    = local.db_instance_class
   db_port              = local.db_port
   db_name              = local.db_name
-  db_username          = local.db_username
   vpc_id               = module.network.vpc_id
-  db_allowed_sg_ids    = [ module.compute.ecs_sg_id, module.compute.jump_host_sg_id ]
+  db_allowed_sg_ids    = [module.compute.ecs_sg_id, module.compute.jump_host_sg_id]
   db_subnet_group_name = module.network.vpc_database_subnet_group
 }
 
