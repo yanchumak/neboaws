@@ -90,10 +90,11 @@ module "ec2_instance" {
 
 # CloudWatch Dashboard for EC2 monitoring, referencing the JSON file
 resource "aws_cloudwatch_dashboard" "ec2_dashboard" {
-  dashboard_name = "EC2-Monitoring-Dashboard"
+  dashboard_name = "EC2_Monitoring_Dashboard"
 
-  # Import JSON file content for the dashboard body
-  dashboard_body = file("ec2_monitoring_dashboard.json")
+  dashboard_body = templatefile("${path.module}/ec2_monitoring_dashboard.json", {
+    instance_id = module.ec2_instance.id
+  })
 }
 
 

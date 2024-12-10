@@ -8,10 +8,10 @@
         "height": 6,
         "properties": {
           "metrics": [
-            [ "AWS/EC2", "CPUUtilization", "InstanceId", "*" ]
+            [ "AWS/EC2", "CPUUtilization", "InstanceId", "${instance_id}" ]
           ],
           "title": "EC2 CPU Utilization",
-          "period": 300,
+          "period": 60,
           "stat": "Average",
           "region": "us-east-1"
         }
@@ -24,11 +24,11 @@
         "height": 6,
         "properties": {
           "metrics": [
-            [ "AWS/EC2", "NetworkIn", "InstanceId", "*" ],
-            [ ".", "NetworkOut", "InstanceId", "*" ]
+            [ "AWS/EC2", "NetworkIn", "InstanceId", "${instance_id}" ],
+            [ ".", "NetworkOut", "InstanceId", "${instance_id}" ]
           ],
           "title": "Network In/Out",
-          "period": 300,
+          "period": 60,
           "stat": "Sum",
           "region": "us-east-1"
         }
@@ -41,11 +41,11 @@
         "height": 6,
         "properties": {
           "metrics": [
-            [ "AWS/EC2", "DiskReadBytes", "InstanceId", "*" ],
-            [ ".", "DiskWriteBytes", "InstanceId", "*" ]
+            [ "AWS/EC2", "DiskReadBytes", "InstanceId", "${instance_id}" ],
+            [ ".", "DiskWriteBytes", "InstanceId", "${instance_id}" ]
           ],
           "title": "Disk Read/Write Bytes",
-          "period": 300,
+          "period": 60,
           "stat": "Sum",
           "region": "us-east-1"
         }
@@ -58,10 +58,10 @@
         "height": 6,
         "properties": {
           "metrics": [
-            [ "AWS/EC2", "StatusCheckFailed", "InstanceId", "*" ]
+            [ "AWS/EC2", "StatusCheckFailed", "InstanceId", "${instance_id}" ]
           ],
           "title": "Instance Status Check",
-          "period": 300,
+          "period": 60,
           "stat": "Sum",
           "region": "us-east-1"
         }

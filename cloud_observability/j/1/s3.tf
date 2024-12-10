@@ -6,7 +6,7 @@ resource "aws_cloudwatch_log_group" "s3_bucket_log_group" {
 
 # S3 Bucket for CloudTrail Logs
 resource "aws_s3_bucket" "cloudtrail_logs_bucket" {
-  bucket = "cloudtrail-logs-bucket-32332131231" 
+  bucket        = "cloudtrail-logs-bucket-32332131231"
   force_destroy = true
 }
 
@@ -22,7 +22,7 @@ resource "aws_s3_bucket_policy" "cloudtrail_logs_bucket_policy" {
         Principal = {
           Service = "cloudtrail.amazonaws.com"
         },
-        Action = "s3:GetBucketAcl",
+        Action   = "s3:GetBucketAcl",
         Resource = "arn:aws:s3:::${aws_s3_bucket.cloudtrail_logs_bucket.id}"
       },
       {
@@ -30,7 +30,7 @@ resource "aws_s3_bucket_policy" "cloudtrail_logs_bucket_policy" {
         Principal = {
           Service = "cloudtrail.amazonaws.com"
         },
-        Action = "s3:PutObject",
+        Action   = "s3:PutObject",
         Resource = "arn:aws:s3:::${aws_s3_bucket.cloudtrail_logs_bucket.id}/AWSLogs/${data.aws_caller_identity.current.account_id}/*",
         Condition = {
           StringEquals = {
@@ -62,7 +62,7 @@ resource "aws_cloudtrail" "s3_bucket_monitoring" {
   }
 
   cloud_watch_logs_group_arn = "${aws_cloudwatch_log_group.s3_bucket_log_group.arn}:*"
-  cloud_watch_logs_role_arn   = aws_iam_role.cloudtrail_role.arn
+  cloud_watch_logs_role_arn  = aws_iam_role.cloudtrail_role.arn
 }
 
 # IAM Role for CloudTrail
@@ -149,16 +149,16 @@ resource "aws_cloudwatch_dashboard" "s3_operations_dashboard" {
   dashboard_body = jsonencode({
     widgets = [
       {
-        type = "metric",
-        x    = 0,
-        y    = 0,
-        width = 24,
+        type   = "metric",
+        x      = 0,
+        y      = 0,
+        width  = 24,
         height = 6,
         properties = {
           metrics = [
-            [ "S3Operations", "GetObjectCount" ],
-            [ "S3Operations", "PutObjectCount" ],
-            [ "S3Operations", "DeleteObjectCount" ]
+            ["S3Operations", "GetObjectCount"],
+            ["S3Operations", "PutObjectCount"],
+            ["S3Operations", "DeleteObjectCount"]
           ],
           period = 300,
           stat   = "Sum",
@@ -170,7 +170,86 @@ resource "aws_cloudwatch_dashboard" "s3_operations_dashboard" {
   })
 }
 
-resource "aws_s3_bucket" "important-bucket" {
+resource "aws_sns_topic_policy" "s3_event_topic_policy" {
+  arn = aws_sns_topic.s3_event_topic.arn
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          Service = "s3.amazonaws.com"
+        },
+        Action   = "sns:Publish",
+        Resource = aws_sns_topic.s3_event_topic.arn,
+        Condition = {
+          ArnLike = {
+            "aws:SourceArn" = "arn:aws:s3:::${aws_s3_bucket.important_bucket.id}"
+          }
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_s3_bucket" "important_bucket" {
   bucket        = "important-bucket-232trt4t"
   force_destroy = true
+}
+
+resource "aws_s3_bucket_notification" "bucket_notification" {
+  bucket = aws_s3_bucket.important_bucket.id
+
+  topic {
+    topic_arn = aws_sns_topic.s3_event_topic.arn
+    events    = ["s3:ObjectCreated:*", "s3:ObjectRemoved:*"]
+  }
+  depends_on = [aws_sns_topic_policy.s3_event_topic_policy]
+
+}
+
+resource "aws_sns_topic" "s3_event_topic" {
+  name = "s3-event-topic"
+}
+
+
+# CloudWatch Alarms for S3 Operations
+resource "aws_cloudwatch_metric_alarm" "get_object_alarm" {
+  alarm_name          = "GetObjectAlarm"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "GetObjectCount"
+  namespace           = "S3Operations"
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 2
+  alarm_actions       = [aws_sns_topic.s3_event_topic.arn]
+  ok_actions          = [aws_sns_topic.s3_event_topic.arn]
+}
+
+resource "aws_cloudwatch_metric_alarm" "put_object_alarm" {
+  alarm_name          = "PutObjectAlarm"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "PutObjectCount"
+  namespace           = "S3Operations"
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 2
+  alarm_actions       = [aws_sns_topic.s3_event_topic.arn]
+  ok_actions          = [aws_sns_topic.s3_event_topic.arn]
+}
+
+resource "aws_cloudwatch_metric_alarm" "delete_object_alarm" {
+  alarm_name          = "DeleteObjectAlarm"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "DeleteObjectCount"
+  namespace           = "S3Operations"
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 2
+  alarm_actions       = [aws_sns_topic.s3_event_topic.arn]
+  ok_actions          = [aws_sns_topic.s3_event_topic.arn]
 }
