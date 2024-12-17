@@ -1,1 +1,1 @@
-1. Monitor Containerized Infrastructure
+1. Maintain and Troubleshoot Containerized Infrastructure
